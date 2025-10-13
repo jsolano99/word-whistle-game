@@ -32,12 +32,12 @@ const Index = () => {
           <div className="flex justify-center mb-4">
             <img 
               src={chameleonLogo} 
-              alt="Chameleon Logo" 
+              alt="Drewmeleon Logo" 
               className="w-24 h-24 rounded-full object-cover"
             />
           </div>
           <h1 className="text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Chameleon
+            Drewmeleon
           </h1>
           <p className="text-muted-foreground text-lg">
             Find the impostor among you
@@ -90,10 +90,10 @@ const Index = () => {
         <Card className="p-4 bg-muted border-none">
           <h3 className="font-semibold mb-2 text-center">How to Play</h3>
           <ul className="text-sm text-muted-foreground space-y-1">
-            <li>• One player is secretly the Chameleon</li>
+            <li>• One player is secretly the Drewmeleon</li>
             <li>• Everyone gives a one-word clue</li>
-            <li>• Vote for who you think is the Chameleon</li>
-            <li>• The Chameleon tries to blend in!</li>
+            <li>• Vote for who you think is the Drewmeleon</li>
+            <li>• The Drewmeleon tries to blend in!</li>
           </ul>
         </Card>
       </Card>

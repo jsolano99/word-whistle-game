@@ -66,7 +66,7 @@ const Room = () => {
         <Card className="p-8 w-full max-w-md space-y-6">
           <div className="text-center space-y-2">
             <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Chameleon
+              Drewmeleon
             </h1>
             <p className="text-muted-foreground">Room: {code}</p>
           </div>
@@ -106,7 +106,7 @@ const Room = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Chameleon
+              Drewmeleon
             </h1>
             <p className="text-sm text-muted-foreground">Round {gameState.round}</p>
           </div>
@@ -171,7 +171,7 @@ const Room = () => {
                 {gameState.isChameleon ? (
                   <>
                     <div className="text-2xl font-bold text-destructive">
-                      You are the CHAMELEON 🦎
+                      You are the DREWMELEON 🦎
                     </div>
                     <p className="text-muted-foreground">
                       You don't know the secret word. Give a vague clue to blend in!
@@ -259,7 +259,7 @@ const Room = () => {
           <div className="space-y-6">
             <Card className="p-6">
               <h2 className="text-2xl font-bold text-center mb-6">
-                Who is the Chameleon?
+                Who is the Drewmeleon?
               </h2>
 
               {!hasSubmittedVote ? (
@@ -315,7 +315,7 @@ const Room = () => {
                 <div className="text-4xl font-bold bg-gradient-secondary bg-clip-text text-transparent mb-4">
                   {gameState.secretWord}
                 </div>
-                <div className="text-xl mb-2">The chameleon was:</div>
+                <div className="text-xl mb-2">The drewmeleon was:</div>
                 <div className="text-3xl font-bold text-destructive">
                   {gameState.players.find((p) => p.id === gameState.chameleonId)
                     ?.name || "Unknown"}
