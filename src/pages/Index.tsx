@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import chameleonLogo from "@/assets/chameleon-logo.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -28,7 +29,13 @@ const Index = () => {
       <Card className="p-8 md:p-12 w-full max-w-md space-y-8 shadow-card">
         {/* Header */}
         <div className="text-center space-y-3">
-          <div className="text-6xl mb-4">🦎</div>
+          <div className="flex justify-center mb-4">
+            <img 
+              src={chameleonLogo} 
+              alt="Chameleon Logo" 
+              className="w-24 h-24 rounded-full object-cover"
+            />
+          </div>
           <h1 className="text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             Chameleon
           </h1>
