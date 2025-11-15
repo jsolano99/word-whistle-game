@@ -53,8 +53,21 @@ const Room = () => {
   if (!connected) {
     return (
       <div className="min-h-screen bg-gradient-game flex items-center justify-center p-4">
-        <Card className="p-8 text-center">
-          <div className="animate-pulse">Connecting to room...</div>
+        <Card className="p-8 max-w-md space-y-4">
+          <div className="text-center space-y-2">
+            <div className="animate-pulse text-lg">Connecting to room...</div>
+            <p className="text-sm text-muted-foreground">
+              If this takes too long, your PartyKit server may not be running.
+            </p>
+          </div>
+          <div className="text-xs text-muted-foreground space-y-2 pt-4 border-t">
+            <p className="font-semibold">To run the backend:</p>
+            <ol className="list-decimal list-inside space-y-1 pl-2">
+              <li>Deploy to PartyKit: <code className="bg-muted px-1 py-0.5 rounded">npx partykit deploy</code></li>
+              <li>Set VITE_PARTYKIT_HOST in your environment variables to your PartyKit URL</li>
+              <li>Or run locally: <code className="bg-muted px-1 py-0.5 rounded">npx partykit dev</code></li>
+            </ol>
+          </div>
         </Card>
       </div>
     );
