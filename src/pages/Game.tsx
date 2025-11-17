@@ -31,6 +31,8 @@ const Game = () => {
   const [deletePasscode, setDeletePasscode] = useState("");
   const [isPasscodeVerified, setIsPasscodeVerified] = useState(false);
   const [selectedPacksToDelete, setSelectedPacksToDelete] = useState<string[]>([]);
+  const [savePasscode, setSavePasscode] = useState("");
+  const [packToSave, setPackToSave] = useState<string | null>(null);
 
   const {
     gameState,
@@ -181,8 +183,18 @@ const Game = () => {
   };
 
   const handleSaveCustomPack = (packName: string) => {
-    saveCustomPack(packName);
-    toast.success(`Saved "${packName}" pack permanently!`);
+    setPackToSave(packName);
+  };
+
+  const handleVerifySavePasscode = () => {
+    if (savePasscode === "jellybean" && packToSave) {
+      saveCustomPack(packToSave);
+      toast.success(`Saved "${packToSave}" pack permanently!`);
+      setSavePasscode("");
+      setPackToSave(null);
+    } else {
+      toast.error("Incorrect passcode!");
+    }
   };
 
   const handleDeleteCustomPack = (packName: string) => {
@@ -228,6 +240,8 @@ const Game = () => {
     toast.success(`Deleted ${selectedPacksToDelete.length} pack(s). They cannot be recovered.`);
     setSelectedPacksToDelete([]);
     setIsDeletePacksMode(false);
+    setIsPasscodeVerified(false);
+    setDeletePasscode("");
   };
 
   // Helper to check if a player has submitted their action
@@ -400,13 +414,15 @@ const Game = () => {
                 {wordPackNames.map((packName) => {
                   const pack = customPacks.find((p) => p.name === packName);
                   const isUnsaved = pack && !pack.isSaved;
+                  const isSaved = pack && pack.isSaved;
                   const isSelected = selectedPacksToDelete.includes(packName);
+                  const canDelete = isCustomPack(packName) && !isSaved;
                   
                   return (
                     <div key={packName} className="relative">
                       <Button
                         onClick={() => {
-                          if (isDeletePacksMode && isCustomPack(packName)) {
+                          if (isDeletePacksMode && canDelete) {
                             togglePackSelection(packName);
                           } else {
                             setWordPack(packName);
@@ -420,34 +436,21 @@ const Game = () => {
                             : "outline"
                         }
                         className="h-auto py-4 md:py-6 w-full text-xs md:text-sm break-words"
-                        disabled={isDeletePacksMode && !isCustomPack(packName)}
+                        disabled={isDeletePacksMode && !canDelete}
                       >
                         {packName}
                       </Button>
-                      {isCustomPack(packName) && !isDeletePacksMode && (
-                        <>
-                          {isUnsaved && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleSaveCustomPack(packName);
-                              }}
-                              className="absolute -top-2 -left-2 bg-accent text-accent-foreground rounded-full p-1 hover:bg-accent/90"
-                              title="Save pack permanently"
-                            >
-                              <Save className="w-3 h-3" />
-                            </button>
-                          )}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteCustomPack(packName);
-                            }}
-                            className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </>
+                      {isCustomPack(packName) && !isDeletePacksMode && isUnsaved && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSaveCustomPack(packName);
+                          }}
+                          className="absolute -top-2 -left-2 bg-accent text-accent-foreground rounded-full p-1 hover:bg-accent/90"
+                          title="Save pack permanently"
+                        >
+                          <Save className="w-3 h-3" />
+                        </button>
                       )}
                     </div>
                   );
@@ -832,6 +835,32 @@ const Game = () => {
           </div>
         )}
       </div>
+      
+      {/* Save Pack Passcode Dialog */}
+      <Dialog open={packToSave !== null} onOpenChange={(open) => !open && setPackToSave(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enter Passcode to Save Pack</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Enter the passcode to permanently save "{packToSave}"
+            </p>
+            <Input
+              type="password"
+              placeholder="Enter passcode"
+              value={savePasscode}
+              onChange={(e) => setSavePasscode(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleVerifySavePasscode()}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPackToSave(null)}>Cancel</Button>
+            <Button onClick={handleVerifySavePasscode}>Save Pack</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
       <BugReportWidget />
     </div>
   );
