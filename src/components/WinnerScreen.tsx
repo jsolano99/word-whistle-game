@@ -70,7 +70,7 @@ export const WinnerScreen = ({ winnerName, onFindNewWinner }: WinnerScreenProps)
             Victory!
           </h1>
           <p className="text-2xl text-muted-foreground">
-            nice you won, now go touch some grass
+            nice you won, now go touch some grass or attend an Andrew's Mixer ;)
           </p>
         </div>
 
