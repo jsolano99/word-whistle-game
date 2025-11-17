@@ -21,7 +21,8 @@ const Index = () => {
         const stored = localStorage.getItem("drewmeleon_game_state");
         if (stored) {
           const gameState = JSON.parse(stored);
-          const isActive = gameState.phase !== "lobby" && gameState.players.length > 0;
+          const totalPoints = gameState.players.reduce((sum: number, player: any) => sum + (player.score || 0), 0);
+          const isActive = totalPoints > 0 && gameState.players.length > 0;
           setHasActiveSession(isActive);
         } else {
           setHasActiveSession(false);
