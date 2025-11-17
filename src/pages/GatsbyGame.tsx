@@ -298,6 +298,10 @@ const GatsbyGame = () => {
               </h1>
               <p className="text-sm text-muted-foreground">Clue Phase</p>
             </div>
+            <Button onClick={returnToGatsbyMode} variant="outline" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
           </div>
 
           {/* Player Selection for Pass-and-Play */}
@@ -463,6 +467,10 @@ const GatsbyGame = () => {
               </h1>
               <p className="text-sm text-muted-foreground">Voting Phase</p>
             </div>
+            <Button onClick={returnToGatsbyMode} variant="outline" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
           </div>
 
           {/* Player Selection */}
