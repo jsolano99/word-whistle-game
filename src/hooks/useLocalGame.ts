@@ -246,20 +246,15 @@ export const useLocalGame = () => {
       const updatedPlayers = prev.players.map((p) => {
         let scoreGain = 0;
         
-        // If chameleon was caught (most voted)
-        if (mostVotedId === prev.chameleonId) {
-          // Players who correctly identified the Drewmeleon get 1 point each
-          if (p.id !== prev.chameleonId && p.vote === prev.chameleonId) {
-            scoreGain = 1;
-          }
-          // Note: Drewmeleon guessing the word correctly would be implemented in a separate phase
-          // For now, this handles the voting outcome only
-        } else {
+        // If chameleon was NOT caught (successfully blended in)
+        if (mostVotedId !== prev.chameleonId) {
           // Drewmeleon successfully blended in, gets 2 points
           if (p.id === prev.chameleonId) {
             scoreGain = 2;
           }
         }
+        // If chameleon was caught, don't award points yet
+        // Points will be awarded after Drewmeleon makes their word guess
         
         return {
           ...p,
@@ -362,6 +357,38 @@ export const useLocalGame = () => {
     return customPacks.some((p) => p.name === packName);
   }, [customPacks]);
 
+  const drewmeleonGuessWord = useCallback((guessedWord: string) => {
+    setGameState((prev) => {
+      const isCorrect = guessedWord === prev.secretWord;
+      
+      const updatedPlayers = prev.players.map((p) => {
+        let scoreGain = 0;
+        
+        if (isCorrect) {
+          // Drewmeleon guessed correctly, they get 1 point
+          if (p.id === prev.chameleonId) {
+            scoreGain = 1;
+          }
+        } else {
+          // Drewmeleon guessed wrong, players who voted for them get 1 point
+          if (p.id !== prev.chameleonId && p.vote === prev.chameleonId) {
+            scoreGain = 1;
+          }
+        }
+        
+        return {
+          ...p,
+          score: p.score + scoreGain,
+        };
+      });
+      
+      return {
+        ...prev,
+        players: updatedPlayers,
+      };
+    });
+  }, []);
+
   return {
     gameState,
     customPacks,
@@ -381,5 +408,6 @@ export const useLocalGame = () => {
     deleteCustomPack,
     bulkDeleteCustomPacks,
     isCustomPack,
+    drewmeleonGuessWord,
   };
 };

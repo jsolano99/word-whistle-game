@@ -35,6 +35,8 @@ const Game = () => {
   const [savePasscode, setSavePasscode] = useState("");
   const [packToSave, setPackToSave] = useState<string | null>(null);
   const [winner, setWinner] = useState<string | null>(null);
+  const [drewmeleonGuessed, setDrewmeleonGuessed] = useState(false);
+  const [drewmeleonGuessedCorrectly, setDrewmeleonGuessedCorrectly] = useState(false);
 
   const {
     gameState,
@@ -55,6 +57,7 @@ const Game = () => {
     deleteCustomPack,
     bulkDeleteCustomPacks,
     isCustomPack,
+    drewmeleonGuessWord,
   } = useLocalGame();
 
   const wordPackNames = getWordPackNames(customPacks);
@@ -128,6 +131,7 @@ const Game = () => {
       toast.error("Wait for all players to submit clues!");
       return;
     }
+    setSelectedPlayerId(null); // Clear selected player when entering vote phase
     goToVote();
   };
 
@@ -137,6 +141,8 @@ const Game = () => {
       toast.error("Wait for all players to vote!");
       return;
     }
+    setDrewmeleonGuessed(false); // Reset guess state when entering reveal phase
+    setDrewmeleonGuessedCorrectly(false);
     goToReveal();
   };
 
@@ -159,6 +165,8 @@ const Game = () => {
 
   const handleNextRound = () => {
     setSelectedPlayerId(null); // Clear selected player
+    setDrewmeleonGuessed(false); // Reset guess state
+    setDrewmeleonGuessedCorrectly(false);
     nextRound();
   };
 
@@ -820,65 +828,155 @@ const Game = () => {
         )}
 
         {/* Reveal Phase */}
-        {gameState.phase === "reveal" && (
-          <div className="space-y-4 md:space-y-6">
-            <Card className="p-4 md:p-6 lg:p-8 text-center space-y-4 md:space-y-6">
-              <div>
-                <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-3 md:mb-4">Round Over!</h2>
-                <div className="text-base md:text-lg lg:text-xl mb-2">The secret word was:</div>
-                <div className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-secondary bg-clip-text text-transparent mb-3 md:mb-4 break-words">
-                  {gameState.secretWord}
-                </div>
-                <div className="text-base md:text-lg lg:text-xl mb-2">The Drewmeleon was:</div>
-                <div className="text-xl md:text-2xl lg:text-3xl font-bold text-destructive break-words">
-                  {gameState.players.find((p) => p.id === gameState.chameleonId)?.name || "Unknown"}
-                </div>
-              </div>
-
-              {/* Vote Results */}
-              <div className="space-y-2">
-                <h3 className="font-semibold text-base md:text-lg">Votes:</h3>
-                {gameState.players.map((player) => (
-                  <div
-                    key={player.id}
-                    className="flex items-center justify-between p-2 md:p-3 rounded-lg bg-muted gap-2 text-sm md:text-base"
-                  >
-                    <span className="break-words">{player.name}</span>
-                    <span className="text-right break-words">
-                      voted for {gameState.players.find((p) => p.id === player.vote)?.name || "no one"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Scores */}
-              <div>
-                <h3 className="font-semibold mb-2 text-base md:text-lg">Scores:</h3>
-                <div className="space-y-2">
-                  {gameState.players
-                    .sort((a, b) => b.score - a.score)
-                    .map((player) => (
-                      <div
-                        key={player.id}
-                        className="flex items-center justify-between p-2 md:p-3 rounded-lg bg-muted gap-2"
-                      >
-                        <span className="font-medium text-sm md:text-base break-words">{player.name}</span>
-                        <span className="text-lg md:text-xl font-bold">{player.score}</span>
+        {gameState.phase === "reveal" && (() => {
+          // Calculate if Drewmeleon was caught
+          const voteCounts: { [key: string]: number } = {};
+          gameState.players.forEach((player) => {
+            if (player.vote) {
+              voteCounts[player.vote] = (voteCounts[player.vote] || 0) + 1;
+            }
+          });
+          
+          let mostVotedId: string | null = null;
+          let maxVotes = 0;
+          Object.entries(voteCounts).forEach(([playerId, count]) => {
+            if (count > maxVotes) {
+              maxVotes = count;
+              mostVotedId = playerId;
+            }
+          });
+          
+          const drewmeleonCaught = mostVotedId === gameState.chameleonId;
+          
+          return (
+            <div className="space-y-4 md:space-y-6">
+              <Card className="p-4 md:p-6 lg:p-8 text-center space-y-4 md:space-y-6">
+                <div>
+                  {drewmeleonCaught ? (
+                    <>
+                      <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-3 md:mb-4">Drewmeleon was found!</h2>
+                      <div className="text-base md:text-lg lg:text-xl mb-2">The Drewmeleon was:</div>
+                      <div className="text-xl md:text-2xl lg:text-3xl font-bold text-destructive mb-4 break-words">
+                        {gameState.players.find((p) => p.id === gameState.chameleonId)?.name || "Unknown"}
                       </div>
-                    ))}
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-3 md:mb-4">Round Over!</h2>
+                      <div className="text-xl md:text-2xl lg:text-3xl font-bold text-destructive mb-4">The Drewmeleon Won!</div>
+                      <div className="text-base md:text-lg lg:text-xl mb-2">The Drewmeleon was:</div>
+                      <div className="text-xl md:text-2xl lg:text-3xl font-bold text-destructive mb-4 break-words">
+                        {gameState.players.find((p) => p.id === gameState.chameleonId)?.name || "Unknown"}
+                      </div>
+                      <div className="text-base md:text-lg lg:text-xl mb-2">The secret word was:</div>
+                      <div className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-secondary bg-clip-text text-transparent mb-3 md:mb-4 break-words">
+                        {gameState.secretWord}
+                      </div>
+                    </>
+                  )}
                 </div>
-              </div>
 
-              <Button
-                onClick={handleNextRound}
-                size="lg"
-                className="bg-gradient-primary text-sm md:text-base w-full md:w-auto"
-              >
-                Next Round
-              </Button>
-            </Card>
-          </div>
-        )}
+                {/* Vote Results */}
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-base md:text-lg">Votes:</h3>
+                  {gameState.players.map((player) => (
+                    <div
+                      key={player.id}
+                      className="flex items-center justify-between p-2 md:p-3 rounded-lg bg-muted gap-2 text-sm md:text-base"
+                    >
+                      <span className="break-words">{player.name}</span>
+                      <span className="text-right break-words">
+                        voted for {gameState.players.find((p) => p.id === player.vote)?.name || "no one"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Drewmeleon's Last Chance - only show if caught */}
+                {drewmeleonCaught && !drewmeleonGuessed && (
+                  <div className="space-y-4">
+                    <div>
+                      <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-2">Drewmeleon's last chance!</h2>
+                      <p className="text-sm md:text-base text-muted-foreground">
+                        If the Drewmeleon properly guesses the word they win the round.
+                      </p>
+                    </div>
+                    
+                    {/* Word Grid */}
+                    <Card className="p-4 md:p-6">
+                      <h3 className="text-base md:text-lg lg:text-xl font-semibold mb-3 md:mb-4 text-center break-words">
+                        {gameState.wordPack} Theme
+                      </h3>
+                      <div className="grid grid-cols-4 gap-2">
+                        {gameState.wordGrid.map((word, idx) => (
+                          <Button
+                            key={idx}
+                            onClick={() => {
+                              setDrewmeleonGuessed(true);
+                              drewmeleonGuessWord(word);
+                              if (word === gameState.secretWord) {
+                                setDrewmeleonGuessedCorrectly(true);
+                                toast.success("Correct! Drewmeleon wins the round!");
+                              } else {
+                                setDrewmeleonGuessedCorrectly(false);
+                                toast.error("Wrong! Players who voted correctly get the point!");
+                              }
+                            }}
+                            variant="outline"
+                            className="h-auto p-2 md:p-3 text-xs md:text-sm break-words min-h-[3rem] md:min-h-[3.5rem]"
+                          >
+                            {word}
+                          </Button>
+                        ))}
+                      </div>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Show secret word after Drewmeleon guesses */}
+                {drewmeleonCaught && drewmeleonGuessed && (
+                  <div>
+                    <div className="text-base md:text-lg lg:text-xl mb-2">The secret word was:</div>
+                    <div className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-secondary bg-clip-text text-transparent mb-3 md:mb-4 break-words">
+                      {gameState.secretWord}
+                    </div>
+                    {drewmeleonGuessedCorrectly ? (
+                      <p className="text-lg font-semibold text-green-600">Drewmeleon guessed correctly and wins 1 point!</p>
+                    ) : (
+                      <p className="text-lg font-semibold">Drewmeleon guessed wrong. Players who voted correctly get 1 point!</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Scores */}
+                <div>
+                  <h3 className="font-semibold mb-2 text-base md:text-lg">Scores:</h3>
+                  <div className="space-y-2">
+                    {gameState.players
+                      .sort((a, b) => b.score - a.score)
+                      .map((player) => (
+                        <div
+                          key={player.id}
+                          className="flex items-center justify-between p-2 md:p-3 rounded-lg bg-muted gap-2"
+                        >
+                          <span className="font-medium text-sm md:text-base break-words">{player.name}</span>
+                          <span className="text-lg md:text-xl font-bold">{player.score}</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleNextRound}
+                  size="lg"
+                  className="bg-gradient-primary text-sm md:text-base w-full md:w-auto"
+                >
+                  Next Round
+                </Button>
+              </Card>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Save Pack Passcode Dialog */}
