@@ -242,18 +242,20 @@ export const useLocalGame = () => {
         }
       });
 
-      // Award points
+      // Award points based on new scoring rules
       const updatedPlayers = prev.players.map((p) => {
         let scoreGain = 0;
         
-        // If chameleon was caught
+        // If chameleon was caught (most voted)
         if (mostVotedId === prev.chameleonId) {
-          // Non-chameleons who voted correctly get a point
+          // Players who correctly identified the Drewmeleon get 1 point each
           if (p.id !== prev.chameleonId && p.vote === prev.chameleonId) {
             scoreGain = 1;
           }
+          // Note: Drewmeleon guessing the word correctly would be implemented in a separate phase
+          // For now, this handles the voting outcome only
         } else {
-          // Chameleon escaped, gets 2 points
+          // Drewmeleon successfully blended in, gets 2 points
           if (p.id === prev.chameleonId) {
             scoreGain = 2;
           }
