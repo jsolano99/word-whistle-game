@@ -5,11 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import chameleonLogo from "@/assets/chameleon-logo.jpg";
 import drewPhoto from "@/assets/drew-photo.png";
+import dogPhoto from "@/assets/dog-photo.png";
 
 const Index = () => {
   const navigate = useNavigate();
   const [roomCode, setRoomCode] = useState("");
-  const [showEasterEgg, setShowEasterEgg] = useState(false);
+  const [imageIndex, setImageIndex] = useState(0);
+  
+  const images = [chameleonLogo, drewPhoto, dogPhoto];
 
   const generateRoomCode = () => {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -33,10 +36,10 @@ const Index = () => {
         <div className="text-center space-y-3">
           <div className="flex justify-center mb-4">
             <img 
-              src={showEasterEgg ? drewPhoto : chameleonLogo} 
+              src={images[imageIndex]} 
               alt="Drewmeleon Logo" 
               className="w-24 h-24 rounded-full object-cover cursor-pointer transition-transform hover:scale-105"
-              onClick={() => setShowEasterEgg(!showEasterEgg)}
+              onClick={() => setImageIndex((prev) => (prev + 1) % 3)}
             />
           </div>
           <h1 className="text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
