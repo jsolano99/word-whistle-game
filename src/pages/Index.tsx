@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,8 +9,22 @@ import dogPhoto from "@/assets/dog-photo.png";
 const Index = () => {
   const navigate = useNavigate();
   const [imageIndex, setImageIndex] = useState(0);
+  const [hasActiveSession, setHasActiveSession] = useState(false);
 
   const images = [chameleonLogo, drewPhoto, dogPhoto];
+
+  useEffect(() => {
+    // Check if there's an active game session (not in lobby)
+    try {
+      const stored = localStorage.getItem("drewmeleon_game_state");
+      if (stored) {
+        const gameState = JSON.parse(stored);
+        setHasActiveSession(gameState.phase !== "lobby" && gameState.players.length > 0);
+      }
+    } catch {
+      setHasActiveSession(false);
+    }
+  }, []);
 
   const handleCreateRoom = () => {
     navigate("/game");
@@ -40,7 +54,7 @@ const Index = () => {
             size="lg"
             className="w-full bg-gradient-primary hover:opacity-90 transition-opacity text-lg py-6"
           >
-            Create New Game
+            {hasActiveSession ? "Return to Current Session" : "Create New Game"}
           </Button>
         </div>
 
