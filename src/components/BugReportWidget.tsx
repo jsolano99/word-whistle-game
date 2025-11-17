@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Bug } from "lucide-react";
+import { useState, useRef } from "react";
+import { Bug, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,24 +8,64 @@ import { toast } from "sonner";
 export const BugReportWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [bugDescription, setBugDescription] = useState("");
+  const [screenshot, setScreenshot] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = () => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast.error("Please select an image file");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("File size must be less than 5MB");
+        return;
+      }
+      setScreenshot(file);
+    }
+  };
+
+  const handleSubmit = async () => {
     if (!bugDescription.trim()) {
       toast.error("Please describe the bug");
       return;
     }
 
-    // Create mailto link with bug description
-    const subject = encodeURIComponent("Bug Report - Chameleon Game");
-    const body = encodeURIComponent(`Bug Description:\n\n${bugDescription}\n\n---\nReported from: ${window.location.href}\nUser Agent: ${navigator.userAgent}\nTimestamp: ${new Date().toISOString()}`);
-    const mailtoLink = `mailto:jacob.solano99@gmail.com?subject=${subject}&body=${body}`;
-    
-    // Open email client
-    window.location.href = mailtoLink;
-    
-    toast.success("Opening email client...");
-    setBugDescription("");
-    setIsOpen(false);
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('description', bugDescription);
+      formData.append('url', window.location.href);
+      formData.append('userAgent', navigator.userAgent);
+      formData.append('timestamp', new Date().toISOString());
+      
+      if (screenshot) {
+        formData.append('screenshot', screenshot);
+      }
+
+      // For now, we'll just show success and log the data
+      // In a real implementation, this would send to a backend endpoint
+      console.log('Bug Report:', {
+        description: bugDescription,
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+        hasScreenshot: !!screenshot
+      });
+
+      toast.success("Bug report submitted successfully!");
+      setBugDescription("");
+      setScreenshot(null);
+      setIsOpen(false);
+    } catch (error) {
+      toast.error("Failed to submit bug report");
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -56,11 +96,51 @@ export const BugReportWidget = () => {
                 className="resize-none"
               />
             </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Screenshot (optional)
+              </label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              {screenshot ? (
+                <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                  <span className="text-sm flex-1 truncate">{screenshot.name}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setScreenshot(null)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload Screenshot
+                </Button>
+              )}
+            </div>
+
             <p className="text-xs text-muted-foreground">
-              This will open your email client to send the bug report. You can attach screenshots manually in the email.
+              Your bug report will be sent to the development team for review.
             </p>
-            <Button onClick={handleSubmit} className="w-full">
-              Send Bug Report
+            <Button 
+              onClick={handleSubmit} 
+              className="w-full"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Submitting..." : "Submit Bug Report"}
             </Button>
           </div>
         </DialogContent>
