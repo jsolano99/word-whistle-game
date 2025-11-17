@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Trash2, ArrowLeft } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Trash2, ArrowLeft, UserPlus } from "lucide-react";
+import { toast } from "sonner";
 
 interface Player {
   id: string;
@@ -24,23 +24,25 @@ const DREW_EDITION_PACK = [
 
 const GatsbyGame = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [phase, setPhase] = useState<GamePhase>("lobby");
   const [players, setPlayers] = useState<Player[]>([]);
   const [playerName, setPlayerName] = useState("");
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [chameleonId, setChameleonId] = useState<string | null>(null);
   const [secretWord, setSecretWord] = useState<string | null>(null);
   const [wordGrid, setWordGrid] = useState<string[]>([]);
-  const [currentPlayerClue, setCurrentPlayerClue] = useState("");
+  const [clueInput, setClueInput] = useState("");
   const [drewmeleonGuess, setDrewmeleonGuess] = useState("");
 
   const addPlayer = () => {
     if (!playerName.trim()) {
-      toast({
-        title: "Invalid name",
-        description: "Please enter a player name",
-        variant: "destructive",
-      });
+      toast.error("Please enter a player name");
+      return;
+    }
+
+    const nameExists = players.some((p) => p.name.toLowerCase() === playerName.trim().toLowerCase());
+    if (nameExists) {
+      toast.error("This name is already taken. Please choose a unique name.");
       return;
     }
 
@@ -53,19 +55,17 @@ const GatsbyGame = () => {
 
     setPlayers([...players, newPlayer]);
     setPlayerName("");
+    toast.success("Player added!");
   };
 
   const removePlayer = (playerId: string) => {
     setPlayers(players.filter((p) => p.id !== playerId));
+    toast.success("Player removed");
   };
 
   const startRound = () => {
     if (players.length < 3) {
-      toast({
-        title: "Not enough players",
-        description: "You need at least 3 players to start",
-        variant: "destructive",
-      });
+      toast.error("Need at least 3 players to start!");
       return;
     }
 
@@ -77,36 +77,37 @@ const GatsbyGame = () => {
     setChameleonId(randomChameleon.id);
     setSecretWord(secret);
     setWordGrid(grid);
+    setSelectedPlayerId(null);
     setPhase("clue");
   };
 
   const submitClue = (playerId: string) => {
-    if (!currentPlayerClue.trim()) {
-      toast({
-        title: "Invalid clue",
-        description: "Please enter a clue",
-        variant: "destructive",
-      });
+    if (!clueInput.trim()) {
+      toast.error("Please enter a clue");
       return;
     }
 
     setPlayers(
       players.map((p) =>
-        p.id === playerId ? { ...p, clue: currentPlayerClue.trim() } : p
+        p.id === playerId ? { ...p, clue: clueInput.trim() } : p
       )
     );
-    setCurrentPlayerClue("");
+    setClueInput("");
+    toast.success("Clue submitted!");
+
+    // Check if all clues are in
+    const allSubmitted = players.every((p) => (p.id === playerId ? true : p.clue !== undefined));
+    if (allSubmitted) {
+      toast.success("All clues submitted!");
+    }
   };
 
   const goToVote = () => {
     if (players.some((p) => !p.clue)) {
-      toast({
-        title: "Not all clues submitted",
-        description: "All players must submit their clues",
-        variant: "destructive",
-      });
+      toast.error("All players must submit their clues first!");
       return;
     }
+    setSelectedPlayerId(null);
     setPhase("vote");
   };
 
@@ -114,15 +115,18 @@ const GatsbyGame = () => {
     setPlayers(
       players.map((p) => (p.id === voterId ? { ...p, vote: votedForId } : p))
     );
+    toast.success("Vote submitted!");
+
+    // Check if all votes are in
+    const allVoted = players.every((p) => (p.id === voterId ? true : p.vote !== undefined));
+    if (allVoted) {
+      toast.success("All votes are in!");
+    }
   };
 
   const goToReveal = () => {
     if (players.some((p) => !p.vote)) {
-      toast({
-        title: "Not all votes submitted",
-        description: "All players must vote",
-        variant: "destructive",
-      });
+      toast.error("All players must vote first!");
       return;
     }
     setPhase("reveal");
@@ -130,11 +134,7 @@ const GatsbyGame = () => {
 
   const drewmeleonGuessWord = () => {
     if (!drewmeleonGuess.trim()) {
-      toast({
-        title: "Invalid guess",
-        description: "Drewmeleon must guess a word",
-        variant: "destructive",
-      });
+      toast.error("Please enter a guess");
       return;
     }
 
@@ -175,12 +175,9 @@ const GatsbyGame = () => {
       })
     );
 
-    toast({
-      title: correctGuess
-        ? "Drewmeleon guessed correctly!"
-        : "Drewmeleon guessed wrong!",
-      description: `The secret word was: ${secretWord}`,
-    });
+    toast.success(correctGuess
+      ? "Drewmeleon guessed correctly!"
+      : `Drewmeleon guessed wrong! The word was: ${secretWord}`);
   };
 
   const returnToGatsbyMode = () => {
@@ -193,47 +190,69 @@ const GatsbyGame = () => {
     setSecretWord(null);
     setWordGrid([]);
     setDrewmeleonGuess("");
+    setSelectedPlayerId(null);
     setPhase("lobby");
   };
 
+  const hasPlayerSubmitted = (playerId: string, phaseType: "clue" | "vote") => {
+    const player = players.find((p) => p.id === playerId);
+    if (!player) return false;
+    return phaseType === "clue" ? !!player.clue : !!player.vote;
+  };
+
+  const cluesSubmitted = players.filter((p) => p.clue).length;
+  const votesSubmitted = players.filter((p) => p.vote).length;
+  const allCluesIn = cluesSubmitted === players.length;
+  const allVotesIn = votesSubmitted === players.length;
+
   if (phase === "lobby") {
     return (
-      <div className="min-h-screen bg-gradient-game flex items-center justify-center p-4">
-        <Card className="p-8 md:p-12 w-full max-w-2xl space-y-6 shadow-card">
+      <div className="min-h-screen bg-gradient-game p-4">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Header */}
           <div className="flex items-center justify-between">
-            <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Drew Edition
-            </h1>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={returnToGatsbyMode}
-            >
-              <ArrowLeft className="h-5 w-5" />
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                Drew Edition
+              </h1>
+              <p className="text-sm text-muted-foreground">Word Pack: Drew Edition</p>
+            </div>
+            <Button onClick={returnToGatsbyMode} variant="outline" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
             </Button>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex gap-2">
+          {/* Players Card */}
+          <Card className="p-4 md:p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <UserPlus className="h-5 w-5" />
+              <h3 className="text-lg font-semibold">Players ({players.length})</h3>
+            </div>
+
+            <div className="flex gap-2 mb-4">
               <Input
                 placeholder="Enter player name"
                 value={playerName}
                 onChange={(e) => setPlayerName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && addPlayer()}
+                className="text-sm md:text-base"
               />
-              <Button onClick={addPlayer}>Add Player</Button>
+              <Button onClick={addPlayer} className="text-sm md:text-base whitespace-nowrap">
+                Add
+              </Button>
             </div>
 
             <div className="space-y-2">
-              <h3 className="font-semibold">Players ({players.length})</h3>
               {players.map((player) => (
                 <div
                   key={player.id}
-                  className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted"
                 >
-                  <span>
-                    {player.name} {player.isHost && "(Host)"}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm md:text-base break-words">{player.name}</span>
+                    {player.isHost && <span className="text-xs text-muted-foreground">(Host)</span>}
+                  </div>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -244,17 +263,25 @@ const GatsbyGame = () => {
                 </div>
               ))}
             </div>
+          </Card>
 
-            <Button
-              onClick={startRound}
-              className="w-full"
-              size="lg"
-              disabled={players.length < 3}
-            >
-              Start Round
-            </Button>
-          </div>
-        </Card>
+          <Card className="p-8 text-center space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Ready to Start?</h2>
+              <p className="text-muted-foreground">
+                {players.length < 3
+                  ? `Need at least 3 players (currently ${players.length})`
+                  : `${players.length} players ready with Drew Edition pack!`}
+              </p>
+            </div>
+
+            {players.length >= 3 && (
+              <Button onClick={startRound} size="lg" className="bg-gradient-primary">
+                Start Round
+              </Button>
+            )}
+          </Card>
+        </div>
       </div>
     );
   }
@@ -262,51 +289,164 @@ const GatsbyGame = () => {
   if (phase === "clue") {
     return (
       <div className="min-h-screen bg-gradient-game p-4">
-        <Card className="p-8 max-w-4xl mx-auto space-y-6 shadow-card">
-          <h2 className="text-3xl font-bold text-center">Submit Clues</h2>
-
-          <div className="grid grid-cols-4 gap-2 mb-6">
-            {wordGrid.map((word, idx) => (
-              <div
-                key={idx}
-                className="p-3 bg-muted rounded-lg text-center font-medium"
-              >
-                {word}
-              </div>
-            ))}
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                Drew Edition
+              </h1>
+              <p className="text-sm text-muted-foreground">Clue Phase</p>
+            </div>
           </div>
 
-          <div className="space-y-4">
-            {players.map((player) => (
-              <div key={player.id} className="flex items-center gap-2">
-                <span className="w-32 font-medium">{player.name}:</span>
-                {player.clue ? (
-                  <span className="text-muted-foreground">✓ Clue submitted</span>
-                ) : player.id === chameleonId ? (
-                  <span className="text-muted-foreground italic">
-                    You are the Drewmeleon! Submit any clue.
-                  </span>
-                ) : (
-                  <>
+          {/* Player Selection for Pass-and-Play */}
+          <Card className="p-4 md:p-6">
+            <h3 className="text-base md:text-lg lg:text-xl font-semibold mb-3 md:mb-4">Who's Turn?</h3>
+            <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4">
+              Pass the device to each player to see their role and submit their clue.
+            </p>
+            <p className="text-xs md:text-sm mb-3 md:mb-4">
+              <strong>Once you're done, deselect your name and pass it to the next player.</strong>
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
+              {players.map((player) => (
+                <Button
+                  key={player.id}
+                  onClick={() => setSelectedPlayerId(selectedPlayerId === player.id ? null : player.id)}
+                  variant={selectedPlayerId === player.id ? "default" : "outline"}
+                  className="h-auto py-3 md:py-4 text-sm md:text-base break-words"
+                >
+                  {player.name}
+                  {hasPlayerSubmitted(player.id, "clue") && " ✓"}
+                </Button>
+              ))}
+            </div>
+          </Card>
+
+          {selectedPlayerId && (
+            <>
+              {/* Role Card */}
+              <Card className="p-4 md:p-6">
+                <div className="text-center space-y-3 md:space-y-4">
+                  {chameleonId === selectedPlayerId ? (
+                    <>
+                      <div className="text-xl md:text-2xl lg:text-3xl font-bold text-destructive break-words">
+                        You are the DREWMELEON 🦎
+                      </div>
+                      <p className="text-sm md:text-base text-muted-foreground">
+                        You don't know the secret word. Give a vague clue to blend in!
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-xs md:text-sm text-muted-foreground">Secret Word:</div>
+                      <div className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-secondary bg-clip-text text-transparent break-words">
+                        {secretWord}
+                      </div>
+                      <p className="text-sm md:text-base text-muted-foreground">
+                        Give a clue related to this word, but don't be too obvious!
+                      </p>
+                    </>
+                  )}
+                </div>
+              </Card>
+
+              {/* Word Grid */}
+              <Card className="p-4 md:p-6">
+                <h3 className="text-base md:text-lg lg:text-xl font-semibold mb-3 md:mb-4 text-center break-words">
+                  Drew Edition Theme
+                </h3>
+                <div className="grid grid-cols-4 gap-2">
+                  {wordGrid.map((word, idx) => (
+                    <div
+                      key={idx}
+                      className={`p-1.5 md:p-2 rounded-lg text-center font-medium transition-all overflow-hidden flex items-center justify-center min-h-[3rem] md:min-h-[3.5rem] ${
+                        word === secretWord && chameleonId !== selectedPlayerId
+                          ? "bg-gradient-secondary text-secondary-foreground shadow-soft"
+                          : "bg-muted"
+                      }`}
+                    >
+                      <span
+                        className={`${
+                          word.length > 8 ? "text-[0.65rem] md:text-xs" : "text-xs md:text-sm"
+                        } break-words hyphens-auto leading-tight`}
+                        style={{ wordBreak: "break-word" }}
+                      >
+                        {word}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              {/* Clue Submission */}
+              {!hasPlayerSubmitted(selectedPlayerId, "clue") ? (
+                <Card className="p-4 md:p-6">
+                  <h3 className="text-base md:text-lg lg:text-xl font-semibold mb-3 md:mb-4 break-words">
+                    Give Your Clue ({players.find((p) => p.id === selectedPlayerId)?.name})
+                  </h3>
+                  <div className="flex gap-2 md:gap-3">
                     <Input
-                      placeholder={`Clue for "${secretWord}"`}
-                      value={currentPlayerClue}
-                      onChange={(e) => setCurrentPlayerClue(e.target.value)}
-                      onKeyDown={(e) =>
-                        e.key === "Enter" && submitClue(player.id)
-                      }
+                      placeholder="One word clue..."
+                      value={clueInput}
+                      onChange={(e) => setClueInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && submitClue(selectedPlayerId)}
+                      className="text-sm md:text-base"
                     />
-                    <Button onClick={() => submitClue(player.id)}>Submit</Button>
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
+                    <Button
+                      onClick={() => submitClue(selectedPlayerId)}
+                      className="text-sm md:text-base whitespace-nowrap"
+                    >
+                      Submit
+                    </Button>
+                  </div>
+                </Card>
+              ) : (
+                <Card className="p-4 md:p-6">
+                  <p className="text-center text-sm md:text-base text-muted-foreground">
+                    ✓ Clue submitted! Deselect your name and pass to next player.
+                  </p>
+                </Card>
+              )}
+            </>
+          )}
 
-          <Button onClick={goToVote} className="w-full" size="lg">
-            Go to Voting
-          </Button>
-        </Card>
+          {/* Clues Submitted Progress */}
+          <Card className="p-4 md:p-6">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <h3 className="text-base md:text-lg lg:text-xl font-semibold">Clues Progress</h3>
+              <span className="text-sm md:text-base font-medium">
+                {cluesSubmitted}/{players.length}
+              </span>
+            </div>
+
+            {players.some((p) => p.clue) && (
+              <div className="space-y-2">
+                {players
+                  .filter((p) => p.clue)
+                  .map((player) => (
+                    <div
+                      key={player.id}
+                      className="flex items-center justify-between p-2 md:p-3 rounded-lg bg-muted gap-2"
+                    >
+                      <span className="font-medium text-sm md:text-base break-words">{player.name}:</span>
+                      <span className="text-base md:text-lg font-semibold break-words">{player.clue}</span>
+                    </div>
+                  ))}
+              </div>
+            )}
+
+            {allCluesIn && (
+              <Button
+                onClick={goToVote}
+                className="w-full mt-3 md:mt-4 bg-gradient-primary text-sm md:text-base"
+              >
+                All Clues In - Go to Voting
+              </Button>
+            )}
+          </Card>
+        </div>
       </div>
     );
   }
@@ -314,40 +454,104 @@ const GatsbyGame = () => {
   if (phase === "vote") {
     return (
       <div className="min-h-screen bg-gradient-game p-4">
-        <Card className="p-8 max-w-4xl mx-auto space-y-6 shadow-card">
-          <h2 className="text-3xl font-bold text-center">Vote for the Drewmeleon</h2>
-
-          <div className="space-y-4">
-            {players.map((voter) => (
-              <div key={voter.id} className="space-y-2">
-                <span className="font-medium">{voter.name}'s vote:</span>
-                {voter.vote ? (
-                  <span className="text-muted-foreground ml-2">
-                    ✓ Voted for {players.find((p) => p.id === voter.vote)?.name}
-                  </span>
-                ) : (
-                  <div className="flex gap-2 flex-wrap">
-                    {players
-                      .filter((p) => p.id !== voter.id)
-                      .map((candidate) => (
-                        <Button
-                          key={candidate.id}
-                          variant="outline"
-                          onClick={() => submitVote(voter.id, candidate.id)}
-                        >
-                          {candidate.name}
-                        </Button>
-                      ))}
-                  </div>
-                )}
-              </div>
-            ))}
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                Drew Edition
+              </h1>
+              <p className="text-sm text-muted-foreground">Voting Phase</p>
+            </div>
           </div>
 
-          <Button onClick={goToReveal} className="w-full" size="lg">
-            Reveal Results
-          </Button>
-        </Card>
+          {/* Player Selection */}
+          <Card className="p-4 md:p-6">
+            <h3 className="text-base md:text-lg lg:text-xl font-semibold mb-3 md:mb-4">Who's Turn to Vote?</h3>
+            <p className="text-xs md:text-sm mb-3 md:mb-4">
+              <strong>Once you see your role press your name and pass it to the next player.</strong>
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
+              {players.map((player) => (
+                <Button
+                  key={player.id}
+                  onClick={() => setSelectedPlayerId(selectedPlayerId === player.id ? null : player.id)}
+                  variant={selectedPlayerId === player.id ? "default" : "outline"}
+                  className="h-auto py-3 md:py-4 text-sm md:text-base break-words"
+                >
+                  {player.name}
+                  {hasPlayerSubmitted(player.id, "vote") && " ✓"}
+                </Button>
+              ))}
+            </div>
+          </Card>
+
+          {selectedPlayerId && (
+            <Card className="p-4 md:p-6">
+              <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-center mb-4 md:mb-6 break-words">
+                {players.find((p) => p.id === selectedPlayerId)?.name}: Who is the Drewmeleon?
+              </h2>
+
+              {!hasPlayerSubmitted(selectedPlayerId, "vote") ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
+                  {players
+                    .filter((p) => p.id !== selectedPlayerId)
+                    .map((player) => (
+                      <Button
+                        key={player.id}
+                        onClick={() => submitVote(selectedPlayerId, player.id)}
+                        variant="outline"
+                        className="h-auto py-3 md:py-4 text-sm md:text-base break-words"
+                      >
+                        {player.name}
+                      </Button>
+                    ))}
+                </div>
+              ) : (
+                <p className="text-center text-sm md:text-base text-muted-foreground">
+                  ✓ Vote submitted! Pass to next player.
+                </p>
+              )}
+            </Card>
+          )}
+
+          {/* Clues Review */}
+          <Card className="p-4 md:p-6">
+            <h3 className="text-base md:text-lg lg:text-xl font-semibold mb-3 md:mb-4">Review Clues</h3>
+            <div className="space-y-2">
+              {players
+                .filter((p) => p.clue)
+                .map((player) => (
+                  <div
+                    key={player.id}
+                    className="flex items-center justify-between p-2 md:p-3 rounded-lg bg-muted gap-2"
+                  >
+                    <span className="font-medium text-sm md:text-base break-words">{player.name}:</span>
+                    <span className="text-base md:text-lg font-semibold break-words">{player.clue}</span>
+                  </div>
+                ))}
+            </div>
+          </Card>
+
+          {/* Vote Progress */}
+          <Card className="p-4 md:p-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base md:text-lg font-semibold">Votes Progress</h3>
+              <span className="text-sm md:text-base font-medium">
+                {votesSubmitted}/{players.length}
+              </span>
+            </div>
+
+            {allVotesIn && (
+              <Button
+                onClick={goToReveal}
+                className="w-full mt-3 bg-gradient-primary text-sm md:text-base"
+              >
+                All Votes In - Reveal Results
+              </Button>
+            )}
+          </Card>
+        </div>
       </div>
     );
   }
