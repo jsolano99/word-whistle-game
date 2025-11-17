@@ -197,25 +197,25 @@ const Game = () => {
         </div>
 
         {/* Players List */}
-        <Card className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Users className="w-5 h-5" />
-            <h2 className="text-xl font-semibold">
+        <Card className="p-4 md:p-6">
+          <div className="flex items-center gap-2 mb-3 md:mb-4">
+            <Users className="w-4 h-4 md:w-5 md:h-5" />
+            <h2 className="text-lg md:text-xl lg:text-2xl font-semibold">
               Players ({gameState.players.length})
             </h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
             {gameState.players.map((player) => (
               <div
                 key={player.id}
-                className="flex items-center justify-between p-3 rounded-lg bg-muted"
+                className="flex items-center justify-between p-2 md:p-3 rounded-lg bg-muted gap-1"
               >
-                <div className="flex items-center gap-2">
-                  {player.isHost && <Crown className="w-4 h-4 text-accent" />}
-                  <span className="font-medium">{player.name}</span>
+                <div className="flex items-center gap-1 md:gap-2 min-w-0">
+                  {player.isHost && <Crown className="w-3 h-3 md:w-4 md:h-4 text-accent flex-shrink-0" />}
+                  <span className="font-medium text-sm md:text-base truncate">{player.name}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
+                <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+                  <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">
                     {player.score}pts
                   </span>
                   {gameState.phase === "lobby" && (
@@ -223,7 +223,7 @@ const Game = () => {
                       onClick={() => removePlayer(player.id)}
                       className="text-destructive hover:text-destructive/80"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3 h-3 md:w-4 md:h-4" />
                     </button>
                   )}
                 </div>
@@ -235,34 +235,35 @@ const Game = () => {
         {/* Lobby Phase */}
         {gameState.phase === "lobby" && (
           <div className="space-y-6">
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <UserPlus className="w-5 h-5" />
+            <Card className="p-4 md:p-6">
+              <h3 className="text-base md:text-lg lg:text-xl font-semibold mb-3 md:mb-4 flex items-center gap-2">
+                <UserPlus className="w-4 h-4 md:w-5 md:h-5" />
                 Add Players
               </h3>
-              <div className="flex gap-3">
+              <div className="flex gap-2 md:gap-3">
                 <Input
                   placeholder="Player name"
                   value={playerNameInput}
                   onChange={(e) => setPlayerNameInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleAddPlayer()}
+                  className="text-sm md:text-base"
                 />
-                <Button onClick={handleAddPlayer}>Add</Button>
+                <Button onClick={handleAddPlayer} className="text-sm md:text-base whitespace-nowrap">Add</Button>
               </div>
             </Card>
 
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Box className="w-5 h-5" />
+            <Card className="p-4 md:p-6">
+              <h3 className="text-base md:text-lg lg:text-xl font-semibold mb-3 md:mb-4 flex items-center gap-2">
+                <Box className="w-4 h-4 md:w-5 md:h-5" />
                 Choose Word Pack
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
                 {wordPackNames.map((packName) => (
                   <div key={packName} className="relative">
                     <Button
                       onClick={() => setWordPack(packName)}
                       variant={gameState.selectedWordPack === packName ? "default" : "outline"}
-                      className="h-auto py-6 w-full"
+                      className="h-auto py-4 md:py-6 w-full text-xs md:text-sm break-words"
                     >
                       {packName}
                     </Button>
@@ -281,7 +282,7 @@ const Game = () => {
                 ))}
                 <Dialog open={isCustomPackDialogOpen} onOpenChange={setIsCustomPackDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" className="h-auto py-6 border-dashed">
+                    <Button variant="outline" className="h-auto py-4 md:py-6 border-dashed text-xs md:text-sm">
                       <Plus className="w-4 h-4 mr-2" />
                       Create Custom
                     </Button>
@@ -378,21 +379,21 @@ const Game = () => {
         {gameState.phase === "clue" && (
           <div className="space-y-6">
             {/* Player Selection for Pass-and-Play */}
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Who's Turn?</h3>
-              <p className="text-sm text-muted-foreground mb-4">
+            <Card className="p-4 md:p-6">
+              <h3 className="text-base md:text-lg lg:text-xl font-semibold mb-3 md:mb-4">Who's Turn?</h3>
+              <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4">
                 Pass the device to each player to see their role and submit their clue.
               </p>
-              <p className="text-sm mb-4">
+              <p className="text-xs md:text-sm mb-3 md:mb-4">
                 <strong>Once you see your role press your name and pass it to the next player.</strong>
               </p>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
                 {gameState.players.map((player) => (
                   <Button
                     key={player.id}
                     onClick={() => setSelectedPlayerId(player.id)}
                     variant={selectedPlayerId === player.id ? "default" : "outline"}
-                    className="h-auto py-4"
+                    className="h-auto py-3 md:py-4 text-sm md:text-base break-words"
                   >
                     {player.name}
                     {hasPlayerSubmitted(player.id, "clue") && " ✓"}
@@ -404,24 +405,24 @@ const Game = () => {
             {selectedPlayerId && (
               <>
                 {/* Role Card */}
-                <Card className="p-6">
-                  <div className="text-center space-y-4">
+                <Card className="p-4 md:p-6">
+                  <div className="text-center space-y-3 md:space-y-4">
                     {gameState.chameleonId === selectedPlayerId ? (
                       <>
-                        <div className="text-2xl font-bold text-destructive">
+                        <div className="text-xl md:text-2xl lg:text-3xl font-bold text-destructive break-words">
                           You are the DREWMELEON 🦎
                         </div>
-                        <p className="text-muted-foreground">
+                        <p className="text-sm md:text-base text-muted-foreground">
                           You don't know the secret word. Give a vague clue to blend in!
                         </p>
                       </>
                     ) : (
                       <>
-                        <div className="text-sm text-muted-foreground">Secret Word:</div>
-                        <div className="text-3xl font-bold bg-gradient-secondary bg-clip-text text-transparent">
+                        <div className="text-xs md:text-sm text-muted-foreground">Secret Word:</div>
+                        <div className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-secondary bg-clip-text text-transparent break-words">
                           {gameState.secretWord}
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm md:text-base text-muted-foreground">
                           Give a clue related to this word, but don't be too obvious!
                         </p>
                       </>
@@ -430,15 +431,15 @@ const Game = () => {
                 </Card>
 
                 {/* Word Grid */}
-                <Card className="p-6">
-                  <h3 className="text-lg font-semibold mb-4 text-center">
+                <Card className="p-4 md:p-6">
+                  <h3 className="text-base md:text-lg lg:text-xl font-semibold mb-3 md:mb-4 text-center break-words">
                     {gameState.wordPack} Theme
                   </h3>
                   <div className="grid grid-cols-4 gap-2">
                     {gameState.wordGrid.map((word, idx) => (
                       <div
                         key={idx}
-                        className={`p-3 rounded-lg text-center text-sm font-medium transition-all ${
+                        className={`p-2 md:p-3 rounded-lg text-center text-xs md:text-sm font-medium transition-all break-words ${
                           word === gameState.secretWord && gameState.chameleonId !== selectedPlayerId
                             ? "bg-gradient-secondary text-secondary-foreground shadow-soft"
                             : "bg-muted"
@@ -452,23 +453,24 @@ const Game = () => {
 
                 {/* Clue Submission */}
                 {!hasPlayerSubmitted(selectedPlayerId, "clue") ? (
-                  <Card className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">
+                  <Card className="p-4 md:p-6">
+                    <h3 className="text-base md:text-lg lg:text-xl font-semibold mb-3 md:mb-4 break-words">
                       Give Your Clue ({gameState.players.find(p => p.id === selectedPlayerId)?.name})
                     </h3>
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 md:gap-3">
                       <Input
                         placeholder="One word clue..."
                         value={clueInput}
                         onChange={(e) => setClueInput(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleSubmitClue(selectedPlayerId)}
+                        className="text-sm md:text-base"
                       />
-                      <Button onClick={() => handleSubmitClue(selectedPlayerId)}>Submit</Button>
+                      <Button onClick={() => handleSubmitClue(selectedPlayerId)} className="text-sm md:text-base whitespace-nowrap">Submit</Button>
                     </div>
                   </Card>
                 ) : (
-                  <Card className="p-6 text-center">
-                    <p className="text-muted-foreground">
+                  <Card className="p-4 md:p-6 text-center">
+                    <p className="text-sm md:text-base text-muted-foreground">
                       ✓ Clue submitted! Pass to next player.
                     </p>
                   </Card>
@@ -477,8 +479,8 @@ const Game = () => {
             )}
 
             {/* All Clues Progress */}
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">
+            <Card className="p-4 md:p-6">
+              <h3 className="text-base md:text-lg lg:text-xl font-semibold mb-3 md:mb-4">
                 Clue Progress ({cluesSubmitted}/{gameState.players.length})
               </h3>
               {cluesSubmitted > 0 && (
@@ -488,17 +490,17 @@ const Game = () => {
                     .map((player) => (
                       <div
                         key={player.id}
-                        className="flex items-center justify-between p-3 rounded-lg bg-muted"
+                        className="flex items-center justify-between p-2 md:p-3 rounded-lg bg-muted gap-2"
                       >
-                        <span className="font-medium">{player.name}:</span>
-                        <span className="text-lg">{player.clue}</span>
+                        <span className="font-medium text-sm md:text-base break-words">{player.name}:</span>
+                        <span className="text-base md:text-lg font-semibold break-words">{player.clue}</span>
                       </div>
                     ))}
                 </div>
               )}
               
               {allCluesIn && (
-                <Button onClick={handleGoToVote} className="w-full mt-4 bg-gradient-primary">
+                <Button onClick={handleGoToVote} className="w-full mt-3 md:mt-4 bg-gradient-primary text-sm md:text-base">
                   All Clues In - Go to Voting
                 </Button>
               )}
@@ -510,18 +512,18 @@ const Game = () => {
         {gameState.phase === "vote" && (
           <div className="space-y-6">
             {/* Player Selection */}
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Who's Turn to Vote?</h3>
-              <p className="text-sm mb-4">
+            <Card className="p-4 md:p-6">
+              <h3 className="text-base md:text-lg lg:text-xl font-semibold mb-3 md:mb-4">Who's Turn to Vote?</h3>
+              <p className="text-xs md:text-sm mb-3 md:mb-4">
                 <strong>Once you see your role press your name and pass it to the next player.</strong>
               </p>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
                 {gameState.players.map((player) => (
                   <Button
                     key={player.id}
                     onClick={() => setSelectedPlayerId(player.id)}
                     variant={selectedPlayerId === player.id ? "default" : "outline"}
-                    className="h-auto py-4"
+                    className="h-auto py-3 md:py-4 text-sm md:text-base break-words"
                   >
                     {player.name}
                     {hasPlayerSubmitted(player.id, "vote") && " ✓"}
@@ -531,13 +533,13 @@ const Game = () => {
             </Card>
 
             {selectedPlayerId && (
-              <Card className="p-6">
-                <h2 className="text-2xl font-bold text-center mb-6">
+              <Card className="p-4 md:p-6">
+                <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-center mb-4 md:mb-6 break-words">
                   {gameState.players.find(p => p.id === selectedPlayerId)?.name}: Who is the Drewmeleon?
                 </h2>
 
                 {!hasPlayerSubmitted(selectedPlayerId, "vote") ? (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
                     {gameState.players
                       .filter((p) => p.id !== selectedPlayerId)
                       .map((player) => (
@@ -545,14 +547,14 @@ const Game = () => {
                           key={player.id}
                           onClick={() => handleVote(selectedPlayerId, player.id)}
                           variant="outline"
-                          className="h-auto py-4"
+                          className="h-auto py-3 md:py-4 text-sm md:text-base break-words"
                         >
                           {player.name}
                         </Button>
                       ))}
                   </div>
                 ) : (
-                  <p className="text-center text-muted-foreground">
+                  <p className="text-center text-sm md:text-base text-muted-foreground">
                     ✓ Vote submitted! Pass to next player.
                   </p>
                 )}
@@ -560,30 +562,30 @@ const Game = () => {
             )}
 
             {/* Clues Review */}
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Review Clues</h3>
+            <Card className="p-4 md:p-6">
+              <h3 className="text-base md:text-lg lg:text-xl font-semibold mb-3 md:mb-4">Review Clues</h3>
               <div className="space-y-2">
                 {gameState.players
                   .filter((p) => p.clue)
                   .map((player) => (
                     <div
                       key={player.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-muted"
+                      className="flex items-center justify-between p-2 md:p-3 rounded-lg bg-muted gap-2"
                     >
-                      <span className="font-medium">{player.name}:</span>
-                      <span className="text-lg">{player.clue}</span>
+                      <span className="font-medium text-sm md:text-base break-words">{player.name}:</span>
+                      <span className="text-base md:text-lg font-semibold break-words">{player.clue}</span>
                     </div>
                   ))}
               </div>
             </Card>
 
             {/* Vote Progress */}
-            <Card className="p-6 text-center">
-              <p className="text-muted-foreground mb-4">
+            <Card className="p-4 md:p-6 text-center">
+              <p className="text-sm md:text-base text-muted-foreground mb-3 md:mb-4">
                 Votes: {votesSubmitted}/{gameState.players.length}
               </p>
               {allVotesIn && (
-                <Button onClick={handleReveal} className="bg-gradient-primary">
+                <Button onClick={handleReveal} className="bg-gradient-primary text-sm md:text-base">
                   All Votes In - Reveal Results
                 </Button>
               )}
@@ -593,16 +595,16 @@ const Game = () => {
 
         {/* Reveal Phase */}
         {gameState.phase === "reveal" && (
-          <div className="space-y-6">
-            <Card className="p-8 text-center space-y-6">
+          <div className="space-y-4 md:space-y-6">
+            <Card className="p-4 md:p-6 lg:p-8 text-center space-y-4 md:space-y-6">
               <div>
-                <h2 className="text-3xl font-bold mb-4">Round Over!</h2>
-                <div className="text-xl mb-2">The secret word was:</div>
-                <div className="text-4xl font-bold bg-gradient-secondary bg-clip-text text-transparent mb-4">
+                <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-3 md:mb-4">Round Over!</h2>
+                <div className="text-base md:text-lg lg:text-xl mb-2">The secret word was:</div>
+                <div className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-secondary bg-clip-text text-transparent mb-3 md:mb-4 break-words">
                   {gameState.secretWord}
                 </div>
-                <div className="text-xl mb-2">The Drewmeleon was:</div>
-                <div className="text-3xl font-bold text-destructive">
+                <div className="text-base md:text-lg lg:text-xl mb-2">The Drewmeleon was:</div>
+                <div className="text-xl md:text-2xl lg:text-3xl font-bold text-destructive break-words">
                   {gameState.players.find((p) => p.id === gameState.chameleonId)
                     ?.name || "Unknown"}
                 </div>
@@ -610,14 +612,14 @@ const Game = () => {
 
               {/* Vote Results */}
               <div className="space-y-2">
-                <h3 className="font-semibold">Votes:</h3>
+                <h3 className="font-semibold text-base md:text-lg">Votes:</h3>
                 {gameState.players.map((player) => (
                   <div
                     key={player.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted"
+                    className="flex items-center justify-between p-2 md:p-3 rounded-lg bg-muted gap-2 text-sm md:text-base"
                   >
-                    <span>{player.name}</span>
-                    <span>
+                    <span className="break-words">{player.name}</span>
+                    <span className="text-right break-words">
                       voted for{" "}
                       {gameState.players.find((p) => p.id === player.vote)
                         ?.name || "no one"}
@@ -628,17 +630,17 @@ const Game = () => {
 
               {/* Scores */}
               <div>
-                <h3 className="font-semibold mb-2">Scores:</h3>
+                <h3 className="font-semibold mb-2 text-base md:text-lg">Scores:</h3>
                 <div className="space-y-2">
                   {gameState.players
                     .sort((a, b) => b.score - a.score)
                     .map((player) => (
                       <div
                         key={player.id}
-                        className="flex items-center justify-between p-3 rounded-lg bg-muted"
+                        className="flex items-center justify-between p-2 md:p-3 rounded-lg bg-muted gap-2"
                       >
-                        <span className="font-medium">{player.name}</span>
-                        <span className="text-xl font-bold">{player.score}</span>
+                        <span className="font-medium text-sm md:text-base break-words">{player.name}</span>
+                        <span className="text-lg md:text-xl font-bold">{player.score}</span>
                       </div>
                     ))}
                 </div>
@@ -647,7 +649,7 @@ const Game = () => {
               <Button
                 onClick={nextRound}
                 size="lg"
-                className="bg-gradient-primary"
+                className="bg-gradient-primary text-sm md:text-base w-full md:w-auto"
               >
                 Next Round
               </Button>
