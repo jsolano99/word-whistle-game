@@ -13,9 +13,7 @@ const Index = () => {
   const [imageIndex, setImageIndex] = useState(0);
   const [hasActiveSession, setHasActiveSession] = useState(false);
   const [isGatsbyMode, setIsGatsbyMode] = useState(false);
-  const [isSelfDestructed, setIsSelfDestructed] = useState(() => {
-    return localStorage.getItem("gatsby_self_destruct") === "true";
-  });
+  const [isSelfDestructed, setIsSelfDestructed] = useState(false);
   const [isExploding, setIsExploding] = useState(false);
 
   const images = [chameleonLogo, drewPhoto, dogPhoto];
@@ -84,7 +82,6 @@ const Index = () => {
 
     // Show absolute cinema
     setTimeout(() => {
-      localStorage.setItem("gatsby_self_destruct", "true");
       setIsSelfDestructed(true);
       setIsExploding(false);
     }, 1500);
