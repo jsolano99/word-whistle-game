@@ -26,6 +26,7 @@ interface GameState {
 interface CustomWordPack {
   name: string;
   words: string[];
+  isSaved?: boolean;
 }
 
 // Word packs for the game
@@ -49,6 +50,7 @@ const WORD_PACKS = {
 };
 
 const CUSTOM_PACKS_KEY = "drewmeleon_custom_packs";
+const GAME_STATE_KEY = "drewmeleon_game_state";
 
 // Load custom packs from localStorage
 const loadCustomPacks = (): CustomWordPack[] => {
@@ -63,6 +65,21 @@ const loadCustomPacks = (): CustomWordPack[] => {
 // Save custom packs to localStorage
 const saveCustomPacks = (packs: CustomWordPack[]) => {
   localStorage.setItem(CUSTOM_PACKS_KEY, JSON.stringify(packs));
+};
+
+// Load game state from localStorage
+const loadGameState = (): GameState | null => {
+  try {
+    const stored = localStorage.getItem(GAME_STATE_KEY);
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+};
+
+// Save game state to localStorage
+const saveGameState = (state: GameState) => {
+  localStorage.setItem(GAME_STATE_KEY, JSON.stringify(state));
 };
 
 export const getWordPackNames = (customPacks: CustomWordPack[] = []) => {
@@ -81,7 +98,8 @@ export const getAllWordPacks = (customPacks: CustomWordPack[] = []) => {
 
 export const useLocalGame = () => {
   const [customPacks, setCustomPacks] = useState<CustomWordPack[]>(loadCustomPacks());
-  const [gameState, setGameState] = useState<GameState>({
+  const savedGameState = loadGameState();
+  const [gameState, setGameState] = useState<GameState>(savedGameState || {
     phase: "lobby",
     players: [],
     hostId: null,
@@ -97,6 +115,11 @@ export const useLocalGame = () => {
   useEffect(() => {
     saveCustomPacks(customPacks);
   }, [customPacks]);
+
+  // Save game state whenever it changes
+  useEffect(() => {
+    saveGameState(gameState);
+  }, [gameState]);
 
   const addPlayer = useCallback((name: string) => {
     setGameState((prev) => {
@@ -264,6 +287,9 @@ export const useLocalGame = () => {
   }, []);
 
   const resetGame = useCallback(() => {
+    // Remove unsaved custom packs
+    setCustomPacks((prev) => prev.filter((p) => p.isSaved));
+    
     setGameState({
       phase: "lobby",
       players: [],
@@ -275,17 +301,24 @@ export const useLocalGame = () => {
       selectedWordPack: null,
       round: 1,
     });
+    localStorage.removeItem(GAME_STATE_KEY);
   }, []);
 
   // Custom pack management
-  const addCustomPack = useCallback((name: string, words: string[]) => {
+  const addCustomPack = useCallback((name: string, words: string[], isSaved = false) => {
     setCustomPacks((prev) => {
       // Check if pack name already exists
       if (prev.some((p) => p.name === name)) {
         return prev;
       }
-      return [...prev, { name, words }];
+      return [...prev, { name, words, isSaved }];
     });
+  }, []);
+
+  const saveCustomPack = useCallback((name: string) => {
+    setCustomPacks((prev) => 
+      prev.map((p) => p.name === name ? { ...p, isSaved: true } : p)
+    );
   }, []);
 
   const deleteCustomPack = useCallback((name: string) => {
@@ -293,6 +326,14 @@ export const useLocalGame = () => {
     // If deleted pack was selected, clear selection
     setGameState((prev) => 
       prev.selectedWordPack === name ? { ...prev, selectedWordPack: null } : prev
+    );
+  }, []);
+
+  const bulkDeleteCustomPacks = useCallback((names: string[]) => {
+    setCustomPacks((prev) => prev.filter((p) => !names.includes(p.name)));
+    // If any deleted pack was selected, clear selection
+    setGameState((prev) => 
+      names.includes(prev.selectedWordPack || "") ? { ...prev, selectedWordPack: null } : prev
     );
   }, []);
 
@@ -314,7 +355,9 @@ export const useLocalGame = () => {
     nextRound,
     resetGame,
     addCustomPack,
+    saveCustomPack,
     deleteCustomPack,
+    bulkDeleteCustomPacks,
     isCustomPack,
   };
 };
