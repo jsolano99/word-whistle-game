@@ -4,17 +4,28 @@ import { useLocalGame, getWordPackNames } from "@/hooks/useLocalGame";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Crown, Users, Trash2, UserPlus, Box } from "lucide-react";
+import { Crown, Users, Trash2, UserPlus, Box, Plus, X } from "lucide-react";
+import { z } from "zod";
+
+const customPackSchema = z.object({
+  name: z.string().trim().min(1, "Pack name is required").max(30, "Pack name must be less than 30 characters"),
+  words: z.array(z.string().trim().min(1).max(50)).min(8, "At least 8 words are required").max(20, "Maximum 20 words allowed"),
+});
 
 const Game = () => {
   const navigate = useNavigate();
   const [playerNameInput, setPlayerNameInput] = useState("");
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [clueInput, setClueInput] = useState("");
+  const [isCustomPackDialogOpen, setIsCustomPackDialogOpen] = useState(false);
+  const [customPackName, setCustomPackName] = useState("");
+  const [customPackWords, setCustomPackWords] = useState<string[]>([""]);
 
   const {
     gameState,
+    customPacks,
     addPlayer,
     removePlayer,
     setWordPack,
@@ -25,9 +36,12 @@ const Game = () => {
     goToReveal,
     nextRound,
     resetGame,
+    addCustomPack,
+    deleteCustomPack,
+    isCustomPack,
   } = useLocalGame();
 
-  const wordPackNames = getWordPackNames();
+  const wordPackNames = getWordPackNames(customPacks);
 
   const handleAddPlayer = () => {
     if (playerNameInput.trim()) {
@@ -103,6 +117,54 @@ const Game = () => {
   const handleResetGame = () => {
     resetGame();
     navigate("/");
+  };
+
+  const handleAddWordField = () => {
+    if (customPackWords.length < 20) {
+      setCustomPackWords([...customPackWords, ""]);
+    }
+  };
+
+  const handleRemoveWordField = (index: number) => {
+    if (customPackWords.length > 1) {
+      setCustomPackWords(customPackWords.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleWordChange = (index: number, value: string) => {
+    const newWords = [...customPackWords];
+    newWords[index] = value;
+    setCustomPackWords(newWords);
+  };
+
+  const handleCreateCustomPack = () => {
+    try {
+      const trimmedWords = customPackWords
+        .map((w) => w.trim())
+        .filter((w) => w.length > 0);
+      
+      const validated = customPackSchema.parse({
+        name: customPackName,
+        words: trimmedWords,
+      });
+
+      addCustomPack(validated.name, validated.words);
+      toast.success(`Custom pack "${validated.name}" created!`);
+      
+      // Reset form
+      setCustomPackName("");
+      setCustomPackWords([""]);
+      setIsCustomPackDialogOpen(false);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      }
+    }
+  };
+
+  const handleDeleteCustomPack = (packName: string) => {
+    deleteCustomPack(packName);
+    toast.success(`Deleted "${packName}" pack`);
   };
 
   // Helper to check if a player has submitted their action
@@ -195,15 +257,98 @@ const Game = () => {
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {wordPackNames.map((packName) => (
-                  <Button
-                    key={packName}
-                    onClick={() => setWordPack(packName)}
-                    variant={gameState.selectedWordPack === packName ? "default" : "outline"}
-                    className="h-auto py-6"
-                  >
-                    {packName}
-                  </Button>
+                  <div key={packName} className="relative">
+                    <Button
+                      onClick={() => setWordPack(packName)}
+                      variant={gameState.selectedWordPack === packName ? "default" : "outline"}
+                      className="h-auto py-6 w-full"
+                    >
+                      {packName}
+                    </Button>
+                    {isCustomPack(packName) && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteCustomPack(packName);
+                        }}
+                        className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
                 ))}
+                <Dialog open={isCustomPackDialogOpen} onOpenChange={setIsCustomPackDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="h-auto py-6 border-dashed">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Custom
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Create Custom Word Pack</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Pack Name</label>
+                        <Input
+                          placeholder="e.g., Tech, Countries, Colors..."
+                          value={customPackName}
+                          onChange={(e) => setCustomPackName(e.target.value)}
+                          maxLength={30}
+                        />
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="text-sm font-medium">Words (8-20 required)</label>
+                          <span className="text-xs text-muted-foreground">
+                            {customPackWords.filter((w) => w.trim()).length} / 20
+                          </span>
+                        </div>
+                        <div className="space-y-2">
+                          {customPackWords.map((word, index) => (
+                            <div key={index} className="flex gap-2">
+                              <Input
+                                placeholder={`Word ${index + 1}`}
+                                value={word}
+                                onChange={(e) => handleWordChange(index, e.target.value)}
+                                maxLength={50}
+                              />
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleRemoveWordField(index)}
+                                disabled={customPackWords.length <= 1}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          ))}
+                          {customPackWords.length < 20 && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleAddWordField}
+                              className="w-full"
+                            >
+                              <Plus className="w-4 h-4 mr-2" />
+                              Add Word
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setIsCustomPackDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={handleCreateCustomPack}>
+                        Create Pack
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             </Card>
 
