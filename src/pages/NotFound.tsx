@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { BugReportWidget } from "@/components/BugReportWidget";
 
 const NotFound = () => {
   const location = useLocation();
@@ -17,6 +18,8 @@ const NotFound = () => {
           Return to Home
         </a>
       </div>
+
+      <BugReportWidget />
     </div>
   );
 };

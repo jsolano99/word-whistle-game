@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { BugReportWidget } from "@/components/BugReportWidget";
 import { Trash2, ArrowLeft, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
@@ -282,6 +283,8 @@ const GatsbyGame = () => {
             )}
           </Card>
         </div>
+
+        <BugReportWidget />
       </div>
     );
   }
@@ -451,6 +454,8 @@ const GatsbyGame = () => {
             )}
           </Card>
         </div>
+
+        <BugReportWidget />
       </div>
     );
   }
@@ -560,6 +565,8 @@ const GatsbyGame = () => {
             )}
           </Card>
         </div>
+
+        <BugReportWidget />
       </div>
     );
   }
@@ -619,6 +626,8 @@ const GatsbyGame = () => {
             </Button>
           </div>
         </Card>
+
+        <BugReportWidget />
       </div>
     );
   }
