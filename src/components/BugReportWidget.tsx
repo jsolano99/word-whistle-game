@@ -40,21 +40,22 @@ export const BugReportWidget = () => {
       formData.append('description', bugDescription);
       formData.append('url', window.location.href);
       formData.append('userAgent', navigator.userAgent);
-      formData.append('timestamp', new Date().toISOString());
       
       if (screenshot) {
         formData.append('screenshot', screenshot);
       }
 
-      // For now, we'll just show success and log the data
-      // In a real implementation, this would send to a backend endpoint
-      console.log('Bug Report:', {
-        description: bugDescription,
-        url: window.location.href,
-        userAgent: navigator.userAgent,
-        timestamp: new Date().toISOString(),
-        hasScreenshot: !!screenshot
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-bug-report`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to submit bug report');
+      }
 
       toast.success("Bug report submitted successfully!");
       setBugDescription("");
