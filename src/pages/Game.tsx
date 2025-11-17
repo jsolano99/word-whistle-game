@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Crown, Users, Trash2, UserPlus, Box, Plus, X } from "lucide-react";
+import { Crown, Users, Trash2, UserPlus, Box, Plus, X, Save, AlertTriangle } from "lucide-react";
 import { z } from "zod";
 import { BugReportWidget } from "@/components/BugReportWidget";
 
@@ -26,6 +26,11 @@ const Game = () => {
   const [isCustomPackDialogOpen, setIsCustomPackDialogOpen] = useState(false);
   const [customPackName, setCustomPackName] = useState("");
   const [customPackWords, setCustomPackWords] = useState<string[]>([""]);
+  const [isNewGameDialogOpen, setIsNewGameDialogOpen] = useState(false);
+  const [isDeletePacksMode, setIsDeletePacksMode] = useState(false);
+  const [deletePasscode, setDeletePasscode] = useState("");
+  const [isPasscodeVerified, setIsPasscodeVerified] = useState(false);
+  const [selectedPacksToDelete, setSelectedPacksToDelete] = useState<string[]>([]);
 
   const {
     gameState,
@@ -41,7 +46,9 @@ const Game = () => {
     nextRound,
     resetGame,
     addCustomPack,
+    saveCustomPack,
     deleteCustomPack,
+    bulkDeleteCustomPacks,
     isCustomPack,
   } = useLocalGame();
 
@@ -120,7 +127,15 @@ const Game = () => {
   };
 
   const handleResetGame = () => {
+    setIsNewGameDialogOpen(true);
+  };
+
+  const confirmResetGame = () => {
     resetGame();
+    setIsNewGameDialogOpen(false);
+  };
+
+  const handleLogoClick = () => {
     navigate("/");
   };
 
@@ -151,7 +166,7 @@ const Game = () => {
         words: trimmedWords,
       });
 
-      addCustomPack(validated.name, validated.words);
+      addCustomPack(validated.name, validated.words, false);
       toast.success(`Custom pack "${validated.name}" created!`);
 
       // Reset form
@@ -165,9 +180,54 @@ const Game = () => {
     }
   };
 
+  const handleSaveCustomPack = (packName: string) => {
+    saveCustomPack(packName);
+    toast.success(`Saved "${packName}" pack permanently!`);
+  };
+
   const handleDeleteCustomPack = (packName: string) => {
     deleteCustomPack(packName);
     toast.success(`Deleted "${packName}" pack`);
+  };
+
+  const handleDeletePacksClick = () => {
+    if (!isPasscodeVerified) {
+      setIsDeletePacksMode(true);
+    } else {
+      setIsDeletePacksMode(!isDeletePacksMode);
+      setSelectedPacksToDelete([]);
+    }
+  };
+
+  const handleVerifyPasscode = () => {
+    if (deletePasscode === "jellybean") {
+      setIsPasscodeVerified(true);
+      setIsDeletePacksMode(true);
+      toast.success("Passcode verified! You can now delete packs.");
+    } else {
+      toast.error("Incorrect passcode!");
+    }
+    setDeletePasscode("");
+  };
+
+  const togglePackSelection = (packName: string) => {
+    setSelectedPacksToDelete((prev) =>
+      prev.includes(packName) 
+        ? prev.filter((p) => p !== packName)
+        : [...prev, packName]
+    );
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedPacksToDelete.length === 0) {
+      toast.error("Please select at least one pack to delete");
+      return;
+    }
+
+    bulkDeleteCustomPacks(selectedPacksToDelete);
+    toast.success(`Deleted ${selectedPacksToDelete.length} pack(s). They cannot be recovered.`);
+    setSelectedPacksToDelete([]);
+    setIsDeletePacksMode(false);
   };
 
   // Helper to check if a player has submitted their action
@@ -188,13 +248,52 @@ const Game = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">Drewmeleon</h1>
+            <h1 
+              className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={handleLogoClick}
+            >
+              Drewmeleon
+            </h1>
             <p className="text-sm text-muted-foreground">Round {gameState.round}</p>
           </div>
           <Button onClick={handleResetGame} variant="outline" size="sm">
             New Game
           </Button>
         </div>
+
+        {/* New Game Warning Dialog */}
+        <Dialog open={isNewGameDialogOpen} onOpenChange={setIsNewGameDialogOpen}>
+          <DialogContent className="border-destructive border-2">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-destructive">
+                <AlertTriangle className="w-6 h-6" />
+                CAUTION: Starting New Game
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-lg font-semibold">⚠️ WARNING ⚠️</p>
+              <p>
+                Starting a new game will <span className="font-bold text-destructive">DELETE</span>:
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                <li>All player names</li>
+                <li>All current scores</li>
+                <li>All unsaved custom word packs</li>
+              </ul>
+              <p className="text-sm text-muted-foreground italic">
+                (Saved packs will be kept safe!)
+              </p>
+            </div>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => setIsNewGameDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={confirmResetGame}>
+                Delete Everything & Start New
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Players List */}
         <Card className="p-4 md:p-6">
@@ -248,33 +347,111 @@ const Game = () => {
             </Card>
 
             <Card className="p-4 md:p-6">
-              <h3 className="text-base md:text-lg lg:text-xl font-semibold mb-3 md:mb-4 flex items-center gap-2">
-                <Box className="w-4 h-4 md:w-5 md:h-5" />
-                Choose Word Pack
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
-                {wordPackNames.map((packName) => (
-                  <div key={packName} className="relative">
-                    <Button
-                      onClick={() => setWordPack(packName)}
-                      variant={gameState.selectedWordPack === packName ? "default" : "outline"}
-                      className="h-auto py-4 md:py-6 w-full text-xs md:text-sm break-words"
+              <div className="flex items-center justify-between mb-3 md:mb-4">
+                <h3 className="text-base md:text-lg lg:text-xl font-semibold flex items-center gap-2">
+                  <Box className="w-4 h-4 md:w-5 md:h-5" />
+                  Choose Word Pack
+                </h3>
+                <div className="flex items-center gap-2">
+                  {!isPasscodeVerified ? (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <button className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                          Delete Packs
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Enter Passcode</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <Input
+                            type="password"
+                            placeholder="Enter passcode"
+                            value={deletePasscode}
+                            onChange={(e) => setDeletePasscode(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleVerifyPasscode()}
+                          />
+                        </div>
+                        <DialogFooter>
+                          <Button onClick={handleVerifyPasscode}>Verify</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  ) : (
+                    <button
+                      onClick={handleDeletePacksClick}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      {packName}
-                    </Button>
-                    {isCustomPack(packName) && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteCustomPack(packName);
+                      {isDeletePacksMode ? "Cancel" : "Delete Packs"}
+                    </button>
+                  )}
+                  {isDeletePacksMode && selectedPacksToDelete.length > 0 && (
+                    <button
+                      onClick={handleBulkDelete}
+                      className="text-xs text-destructive hover:text-destructive/80 transition-colors font-semibold"
+                    >
+                      Delete ({selectedPacksToDelete.length})
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+                {wordPackNames.map((packName) => {
+                  const pack = customPacks.find((p) => p.name === packName);
+                  const isUnsaved = pack && !pack.isSaved;
+                  const isSelected = selectedPacksToDelete.includes(packName);
+                  
+                  return (
+                    <div key={packName} className="relative">
+                      <Button
+                        onClick={() => {
+                          if (isDeletePacksMode && isCustomPack(packName)) {
+                            togglePackSelection(packName);
+                          } else {
+                            setWordPack(packName);
+                          }
                         }}
-                        className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90"
+                        variant={
+                          isDeletePacksMode && isSelected 
+                            ? "destructive"
+                            : gameState.selectedWordPack === packName 
+                            ? "default" 
+                            : "outline"
+                        }
+                        className="h-auto py-4 md:py-6 w-full text-xs md:text-sm break-words"
+                        disabled={isDeletePacksMode && !isCustomPack(packName)}
                       >
-                        <X className="w-3 h-3" />
-                      </button>
-                    )}
-                  </div>
-                ))}
+                        {packName}
+                      </Button>
+                      {isCustomPack(packName) && !isDeletePacksMode && (
+                        <>
+                          {isUnsaved && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSaveCustomPack(packName);
+                              }}
+                              className="absolute -top-2 -left-2 bg-accent text-accent-foreground rounded-full p-1 hover:bg-accent/90"
+                              title="Save pack permanently"
+                            >
+                              <Save className="w-3 h-3" />
+                            </button>
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteCustomPack(packName);
+                            }}
+                            className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
                 <Dialog open={isCustomPackDialogOpen} onOpenChange={setIsCustomPackDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="outline" className="h-auto py-4 md:py-6 border-dashed text-xs md:text-sm">
