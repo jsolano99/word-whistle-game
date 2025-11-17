@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 interface Player {
   id: string;
@@ -23,6 +23,11 @@ interface GameState {
   round: number;
 }
 
+interface CustomWordPack {
+  name: string;
+  words: string[];
+}
+
 // Word packs for the game
 const WORD_PACKS = {
   Animals: [
@@ -43,9 +48,39 @@ const WORD_PACKS = {
   ],
 };
 
-export const getWordPackNames = () => Object.keys(WORD_PACKS);
+const CUSTOM_PACKS_KEY = "drewmeleon_custom_packs";
+
+// Load custom packs from localStorage
+const loadCustomPacks = (): CustomWordPack[] => {
+  try {
+    const stored = localStorage.getItem(CUSTOM_PACKS_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
+
+// Save custom packs to localStorage
+const saveCustomPacks = (packs: CustomWordPack[]) => {
+  localStorage.setItem(CUSTOM_PACKS_KEY, JSON.stringify(packs));
+};
+
+export const getWordPackNames = (customPacks: CustomWordPack[] = []) => {
+  const defaultPacks = Object.keys(WORD_PACKS);
+  const customPackNames = customPacks.map((p) => p.name);
+  return [...defaultPacks, ...customPackNames];
+};
+
+export const getAllWordPacks = (customPacks: CustomWordPack[] = []) => {
+  const allPacks: { [key: string]: string[] } = { ...WORD_PACKS };
+  customPacks.forEach((pack) => {
+    allPacks[pack.name] = pack.words;
+  });
+  return allPacks;
+};
 
 export const useLocalGame = () => {
+  const [customPacks, setCustomPacks] = useState<CustomWordPack[]>(loadCustomPacks());
   const [gameState, setGameState] = useState<GameState>({
     phase: "lobby",
     players: [],
@@ -57,6 +92,11 @@ export const useLocalGame = () => {
     selectedWordPack: null,
     round: 1,
   });
+
+  // Save custom packs whenever they change
+  useEffect(() => {
+    saveCustomPacks(customPacks);
+  }, [customPacks]);
 
   const addPlayer = useCallback((name: string) => {
     setGameState((prev) => {
@@ -105,8 +145,11 @@ export const useLocalGame = () => {
     setGameState((prev) => {
       if (!prev.selectedWordPack) return prev;
       
-      // Get selected word pack
-      const words = WORD_PACKS[prev.selectedWordPack as keyof typeof WORD_PACKS];
+      // Get selected word pack from all packs
+      const allPacks = getAllWordPacks(customPacks);
+      const words = allPacks[prev.selectedWordPack];
+      if (!words || words.length === 0) return prev;
+      
       const secretWord = words[Math.floor(Math.random() * words.length)];
       
       // Choose random chameleon
@@ -129,7 +172,7 @@ export const useLocalGame = () => {
         wordPack: prev.selectedWordPack,
       };
     });
-  }, []);
+  }, [customPacks]);
 
   const submitClue = useCallback((playerId: string, clue: string) => {
     setGameState((prev) => ({
@@ -234,8 +277,32 @@ export const useLocalGame = () => {
     });
   }, []);
 
+  // Custom pack management
+  const addCustomPack = useCallback((name: string, words: string[]) => {
+    setCustomPacks((prev) => {
+      // Check if pack name already exists
+      if (prev.some((p) => p.name === name)) {
+        return prev;
+      }
+      return [...prev, { name, words }];
+    });
+  }, []);
+
+  const deleteCustomPack = useCallback((name: string) => {
+    setCustomPacks((prev) => prev.filter((p) => p.name !== name));
+    // If deleted pack was selected, clear selection
+    setGameState((prev) => 
+      prev.selectedWordPack === name ? { ...prev, selectedWordPack: null } : prev
+    );
+  }, []);
+
+  const isCustomPack = useCallback((packName: string) => {
+    return customPacks.some((p) => p.name === packName);
+  }, [customPacks]);
+
   return {
     gameState,
+    customPacks,
     addPlayer,
     removePlayer,
     setWordPack,
@@ -246,5 +313,8 @@ export const useLocalGame = () => {
     goToReveal,
     nextRound,
     resetGame,
+    addCustomPack,
+    deleteCustomPack,
+    isCustomPack,
   };
 };
