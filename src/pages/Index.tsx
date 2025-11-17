@@ -77,7 +77,7 @@ const Index = () => {
               />
             </div>
             <h1 className="text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">Great Gatsby Mode</h1>
-            <p className="text-muted-foreground text-lg"></p>
+            <p className="text-muted-foreground text-lg"> 30 Years Old Edition</p>
           </div>
 
           {/* Options */}
