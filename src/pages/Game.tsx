@@ -439,13 +439,17 @@ const Game = () => {
                     {gameState.wordGrid.map((word, idx) => (
                       <div
                         key={idx}
-                        className={`p-2 md:p-3 rounded-lg text-center text-xs md:text-sm font-medium transition-all break-words ${
+                        className={`p-1.5 md:p-2 rounded-lg text-center font-medium transition-all overflow-hidden flex items-center justify-center min-h-[3rem] md:min-h-[3.5rem] ${
                           word === gameState.secretWord && gameState.chameleonId !== selectedPlayerId
                             ? "bg-gradient-secondary text-secondary-foreground shadow-soft"
                             : "bg-muted"
                         }`}
                       >
-                        {word}
+                        <span className={`${
+                          word.length > 8 ? "text-[0.65rem] md:text-xs" : "text-xs md:text-sm"
+                        } break-words hyphens-auto leading-tight`} style={{ wordBreak: 'break-word' }}>
+                          {word}
+                        </span>
                       </div>
                     ))}
                   </div>
