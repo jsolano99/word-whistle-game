@@ -46,6 +46,11 @@ const Game = () => {
 
   const handleAddPlayer = () => {
     if (playerNameInput.trim()) {
+      const nameExists = gameState.players.some(p => p.name.toLowerCase() === playerNameInput.trim().toLowerCase());
+      if (nameExists) {
+        toast.error("This name is already taken. Please choose a unique name.");
+        return;
+      }
       addPlayer(playerNameInput.trim());
       setPlayerNameInput("");
       toast.success("Player added!");
@@ -391,7 +396,7 @@ const Game = () => {
                 {gameState.players.map((player) => (
                   <Button
                     key={player.id}
-                    onClick={() => setSelectedPlayerId(player.id)}
+                    onClick={() => setSelectedPlayerId(selectedPlayerId === player.id ? null : player.id)}
                     variant={selectedPlayerId === player.id ? "default" : "outline"}
                     className="h-auto py-3 md:py-4 text-sm md:text-base break-words"
                   >
@@ -525,7 +530,7 @@ const Game = () => {
                 {gameState.players.map((player) => (
                   <Button
                     key={player.id}
-                    onClick={() => setSelectedPlayerId(player.id)}
+                    onClick={() => setSelectedPlayerId(selectedPlayerId === player.id ? null : player.id)}
                     variant={selectedPlayerId === player.id ? "default" : "outline"}
                     className="h-auto py-3 md:py-4 text-sm md:text-base break-words"
                   >
