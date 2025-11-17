@@ -445,7 +445,7 @@ const Game = () => {
                   const isUnsaved = pack && !pack.isSaved;
                   const isSaved = pack && pack.isSaved;
                   const isSelected = selectedPacksToDelete.includes(packName);
-                  const canDelete = isCustomPack(packName) && !isSaved;
+                  const canDelete = isCustomPack(packName); // Allow deleting any custom pack (not default packs)
 
                   return (
                     <div key={packName} className="relative">
