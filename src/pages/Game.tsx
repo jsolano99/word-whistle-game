@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { toast } from "sonner";
 import { Crown, Users, Trash2, UserPlus, Box, Plus, X } from "lucide-react";
 import { z } from "zod";
+import { BugReportWidget } from "@/components/BugReportWidget";
 
 const customPackSchema = z.object({
   name: z.string().trim().min(1, "Pack name is required").max(30, "Pack name must be less than 30 characters"),
@@ -382,6 +383,9 @@ const Game = () => {
               <p className="text-sm text-muted-foreground mb-4">
                 Pass the device to each player to see their role and submit their clue.
               </p>
+              <p className="text-sm mb-4">
+                <strong>Once you see your role press your name and pass it to the next player.</strong>
+              </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {gameState.players.map((player) => (
                   <Button
@@ -508,6 +512,9 @@ const Game = () => {
             {/* Player Selection */}
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Who's Turn to Vote?</h3>
+              <p className="text-sm mb-4">
+                <strong>Once you see your role press your name and pass it to the next player.</strong>
+              </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {gameState.players.map((player) => (
                   <Button
@@ -648,6 +655,7 @@ const Game = () => {
           </div>
         )}
       </div>
+      <BugReportWidget />
     </div>
   );
 };
