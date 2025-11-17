@@ -12,7 +12,10 @@ import { BugReportWidget } from "@/components/BugReportWidget";
 
 const customPackSchema = z.object({
   name: z.string().trim().min(1, "Pack name is required").max(30, "Pack name must be less than 30 characters"),
-  words: z.array(z.string().trim().min(1).max(50)).min(8, "At least 8 words are required").max(20, "Maximum 20 words allowed"),
+  words: z
+    .array(z.string().trim().min(1).max(50))
+    .min(8, "At least 8 words are required")
+    .max(20, "Maximum 20 words allowed"),
 });
 
 const Game = () => {
@@ -46,7 +49,7 @@ const Game = () => {
 
   const handleAddPlayer = () => {
     if (playerNameInput.trim()) {
-      const nameExists = gameState.players.some(p => p.name.toLowerCase() === playerNameInput.trim().toLowerCase());
+      const nameExists = gameState.players.some((p) => p.name.toLowerCase() === playerNameInput.trim().toLowerCase());
       if (nameExists) {
         toast.error("This name is already taken. Please choose a unique name.");
         return;
@@ -74,11 +77,9 @@ const Game = () => {
       submitClue(playerId, clueInput.trim());
       setClueInput("");
       toast.success("Clue submitted!");
-      
+
       // Check if all clues are in
-      const allSubmitted = gameState.players.every((p) => 
-        p.id === playerId ? true : p.clue !== undefined
-      );
+      const allSubmitted = gameState.players.every((p) => (p.id === playerId ? true : p.clue !== undefined));
       if (allSubmitted) {
         setTimeout(() => {
           toast.info("All clues submitted! Ready to vote.");
@@ -90,11 +91,9 @@ const Game = () => {
   const handleVote = (voterId: string, votedPlayerId: string) => {
     submitVote(voterId, votedPlayerId);
     toast.success("Vote submitted!");
-    
+
     // Check if all votes are in
-    const allVoted = gameState.players.every((p) => 
-      p.id === voterId ? true : p.vote !== undefined
-    );
+    const allVoted = gameState.players.every((p) => (p.id === voterId ? true : p.vote !== undefined));
     if (allVoted) {
       setTimeout(() => {
         toast.info("All votes submitted! Ready to reveal.");
@@ -145,10 +144,8 @@ const Game = () => {
 
   const handleCreateCustomPack = () => {
     try {
-      const trimmedWords = customPackWords
-        .map((w) => w.trim())
-        .filter((w) => w.length > 0);
-      
+      const trimmedWords = customPackWords.map((w) => w.trim()).filter((w) => w.length > 0);
+
       const validated = customPackSchema.parse({
         name: customPackName,
         words: trimmedWords,
@@ -156,7 +153,7 @@ const Game = () => {
 
       addCustomPack(validated.name, validated.words);
       toast.success(`Custom pack "${validated.name}" created!`);
-      
+
       // Reset form
       setCustomPackName("");
       setCustomPackWords([""]);
@@ -191,9 +188,7 @@ const Game = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Drewmeleon
-            </h1>
+            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">Drewmeleon</h1>
             <p className="text-sm text-muted-foreground">Round {gameState.round}</p>
           </div>
           <Button onClick={handleResetGame} variant="outline" size="sm">
@@ -205,24 +200,17 @@ const Game = () => {
         <Card className="p-4 md:p-6">
           <div className="flex items-center gap-2 mb-3 md:mb-4">
             <Users className="w-4 h-4 md:w-5 md:h-5" />
-            <h2 className="text-lg md:text-xl lg:text-2xl font-semibold">
-              Players ({gameState.players.length})
-            </h2>
+            <h2 className="text-lg md:text-xl lg:text-2xl font-semibold">Players ({gameState.players.length})</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
             {gameState.players.map((player) => (
-              <div
-                key={player.id}
-                className="flex items-center justify-between p-2 md:p-3 rounded-lg bg-muted gap-1"
-              >
+              <div key={player.id} className="flex items-center justify-between p-2 md:p-3 rounded-lg bg-muted gap-1">
                 <div className="flex items-center gap-1 md:gap-2 min-w-0">
                   {player.isHost && <Crown className="w-3 h-3 md:w-4 md:h-4 text-accent flex-shrink-0" />}
                   <span className="font-medium text-sm md:text-base truncate">{player.name}</span>
                 </div>
                 <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-                  <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">
-                    {player.score}pts
-                  </span>
+                  <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">{player.score}pts</span>
                   {gameState.phase === "lobby" && (
                     <button
                       onClick={() => removePlayer(player.id)}
@@ -253,7 +241,9 @@ const Game = () => {
                   onKeyDown={(e) => e.key === "Enter" && handleAddPlayer()}
                   className="text-sm md:text-base"
                 />
-                <Button onClick={handleAddPlayer} className="text-sm md:text-base whitespace-nowrap">Add</Button>
+                <Button onClick={handleAddPlayer} className="text-sm md:text-base whitespace-nowrap">
+                  Add
+                </Button>
               </div>
             </Card>
 
@@ -333,12 +323,7 @@ const Game = () => {
                             </div>
                           ))}
                           {customPackWords.length < 20 && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={handleAddWordField}
-                              className="w-full"
-                            >
+                            <Button variant="outline" size="sm" onClick={handleAddWordField} className="w-full">
                               <Plus className="w-4 h-4 mr-2" />
                               Add Word
                             </Button>
@@ -350,9 +335,7 @@ const Game = () => {
                       <Button variant="outline" onClick={() => setIsCustomPackDialogOpen(false)}>
                         Cancel
                       </Button>
-                      <Button onClick={handleCreateCustomPack}>
-                        Create Pack
-                      </Button>
+                      <Button onClick={handleCreateCustomPack}>Create Pack</Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
@@ -366,8 +349,8 @@ const Game = () => {
                   {gameState.players.length < 3
                     ? `Need at least 3 players (currently ${gameState.players.length})`
                     : !gameState.selectedWordPack
-                    ? "Select a word pack to continue"
-                    : `${gameState.players.length} players ready with ${gameState.selectedWordPack} pack!`}
+                      ? "Select a word pack to continue"
+                      : `${gameState.players.length} players ready with ${gameState.selectedWordPack} pack!`}
                 </p>
               </div>
 
@@ -390,7 +373,7 @@ const Game = () => {
                 Pass the device to each player to see their role and submit their clue.
               </p>
               <p className="text-xs md:text-sm mb-3 md:mb-4">
-                <strong>Once you see your role press your name and pass it to the next player.</strong>
+                <strong>Once you've see your role, deselect your name and pass it to the next player.</strong>
               </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
                 {gameState.players.map((player) => (
@@ -450,9 +433,12 @@ const Game = () => {
                             : "bg-muted"
                         }`}
                       >
-                        <span className={`${
-                          word.length > 8 ? "text-[0.65rem] md:text-xs" : "text-xs md:text-sm"
-                        } break-words hyphens-auto leading-tight`} style={{ wordBreak: 'break-word' }}>
+                        <span
+                          className={`${
+                            word.length > 8 ? "text-[0.65rem] md:text-xs" : "text-xs md:text-sm"
+                          } break-words hyphens-auto leading-tight`}
+                          style={{ wordBreak: "break-word" }}
+                        >
                           {word}
                         </span>
                       </div>
@@ -464,7 +450,7 @@ const Game = () => {
                 {!hasPlayerSubmitted(selectedPlayerId, "clue") ? (
                   <Card className="p-4 md:p-6">
                     <h3 className="text-base md:text-lg lg:text-xl font-semibold mb-3 md:mb-4 break-words">
-                      Give Your Clue ({gameState.players.find(p => p.id === selectedPlayerId)?.name})
+                      Give Your Clue ({gameState.players.find((p) => p.id === selectedPlayerId)?.name})
                     </h3>
                     <div className="flex gap-2 md:gap-3">
                       <Input
@@ -474,14 +460,17 @@ const Game = () => {
                         onKeyDown={(e) => e.key === "Enter" && handleSubmitClue(selectedPlayerId)}
                         className="text-sm md:text-base"
                       />
-                      <Button onClick={() => handleSubmitClue(selectedPlayerId)} className="text-sm md:text-base whitespace-nowrap">Submit</Button>
+                      <Button
+                        onClick={() => handleSubmitClue(selectedPlayerId)}
+                        className="text-sm md:text-base whitespace-nowrap"
+                      >
+                        Submit
+                      </Button>
                     </div>
                   </Card>
                 ) : (
                   <Card className="p-4 md:p-6 text-center">
-                    <p className="text-sm md:text-base text-muted-foreground">
-                      ✓ Clue submitted! Pass to next player.
-                    </p>
+                    <p className="text-sm md:text-base text-muted-foreground">✓ Clue submitted! Pass to next player.</p>
                   </Card>
                 )}
               </>
@@ -507,9 +496,12 @@ const Game = () => {
                     ))}
                 </div>
               )}
-              
+
               {allCluesIn && (
-                <Button onClick={handleGoToVote} className="w-full mt-3 md:mt-4 bg-gradient-primary text-sm md:text-base">
+                <Button
+                  onClick={handleGoToVote}
+                  className="w-full mt-3 md:mt-4 bg-gradient-primary text-sm md:text-base"
+                >
                   All Clues In - Go to Voting
                 </Button>
               )}
@@ -544,7 +536,7 @@ const Game = () => {
             {selectedPlayerId && (
               <Card className="p-4 md:p-6">
                 <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-center mb-4 md:mb-6 break-words">
-                  {gameState.players.find(p => p.id === selectedPlayerId)?.name}: Who is the Drewmeleon?
+                  {gameState.players.find((p) => p.id === selectedPlayerId)?.name}: Who is the Drewmeleon?
                 </h2>
 
                 {!hasPlayerSubmitted(selectedPlayerId, "vote") ? (
@@ -614,8 +606,7 @@ const Game = () => {
                 </div>
                 <div className="text-base md:text-lg lg:text-xl mb-2">The Drewmeleon was:</div>
                 <div className="text-xl md:text-2xl lg:text-3xl font-bold text-destructive break-words">
-                  {gameState.players.find((p) => p.id === gameState.chameleonId)
-                    ?.name || "Unknown"}
+                  {gameState.players.find((p) => p.id === gameState.chameleonId)?.name || "Unknown"}
                 </div>
               </div>
 
@@ -629,9 +620,7 @@ const Game = () => {
                   >
                     <span className="break-words">{player.name}</span>
                     <span className="text-right break-words">
-                      voted for{" "}
-                      {gameState.players.find((p) => p.id === player.vote)
-                        ?.name || "no one"}
+                      voted for {gameState.players.find((p) => p.id === player.vote)?.name || "no one"}
                     </span>
                   </div>
                 ))}
