@@ -19,6 +19,7 @@ interface GameState {
   secretWord: string | null;
   wordGrid: string[];
   wordPack: string | null;
+  selectedWordPack: string | null;
   round: number;
 }
 
@@ -42,11 +43,7 @@ const WORD_PACKS = {
   ],
 };
 
-const getRandomWordPack = (): [string, string[]] => {
-  const packs = Object.entries(WORD_PACKS);
-  const [packName, words] = packs[Math.floor(Math.random() * packs.length)];
-  return [packName, words];
-};
+export const getWordPackNames = () => Object.keys(WORD_PACKS);
 
 export const useLocalGame = () => {
   const [gameState, setGameState] = useState<GameState>({
@@ -57,6 +54,7 @@ export const useLocalGame = () => {
     secretWord: null,
     wordGrid: [],
     wordPack: null,
+    selectedWordPack: null,
     round: 1,
   });
 
@@ -96,10 +94,19 @@ export const useLocalGame = () => {
     });
   }, []);
 
+  const setWordPack = useCallback((packName: string) => {
+    setGameState((prev) => ({
+      ...prev,
+      selectedWordPack: packName,
+    }));
+  }, []);
+
   const startRound = useCallback(() => {
     setGameState((prev) => {
-      // Get random word pack and select secret word
-      const [packName, words] = getRandomWordPack();
+      if (!prev.selectedWordPack) return prev;
+      
+      // Get selected word pack
+      const words = WORD_PACKS[prev.selectedWordPack as keyof typeof WORD_PACKS];
       const secretWord = words[Math.floor(Math.random() * words.length)];
       
       // Choose random chameleon
@@ -119,7 +126,7 @@ export const useLocalGame = () => {
         chameleonId,
         secretWord,
         wordGrid: words,
-        wordPack: packName,
+        wordPack: prev.selectedWordPack,
       };
     });
   }, []);
@@ -209,6 +216,7 @@ export const useLocalGame = () => {
       secretWord: null,
       wordGrid: [],
       wordPack: null,
+      selectedWordPack: null,
     }));
   }, []);
 
@@ -221,6 +229,7 @@ export const useLocalGame = () => {
       secretWord: null,
       wordGrid: [],
       wordPack: null,
+      selectedWordPack: null,
       round: 1,
     });
   }, []);
@@ -229,6 +238,7 @@ export const useLocalGame = () => {
     gameState,
     addPlayer,
     removePlayer,
+    setWordPack,
     startRound,
     submitClue,
     goToVote,

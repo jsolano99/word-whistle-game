@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useLocalGame } from "@/hooks/useLocalGame";
+import { useLocalGame, getWordPackNames } from "@/hooks/useLocalGame";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Crown, Users, Trash2, UserPlus } from "lucide-react";
+import { Crown, Users, Trash2, UserPlus, Box } from "lucide-react";
 
 const Game = () => {
   const navigate = useNavigate();
@@ -17,6 +17,7 @@ const Game = () => {
     gameState,
     addPlayer,
     removePlayer,
+    setWordPack,
     startRound,
     submitClue,
     goToVote,
@@ -25,6 +26,8 @@ const Game = () => {
     nextRound,
     resetGame,
   } = useLocalGame();
+
+  const wordPackNames = getWordPackNames();
 
   const handleAddPlayer = () => {
     if (playerNameInput.trim()) {
@@ -37,6 +40,10 @@ const Game = () => {
   const handleStartRound = () => {
     if (gameState.players.length < 3) {
       toast.error("Need at least 3 players to start!");
+      return;
+    }
+    if (!gameState.selectedWordPack) {
+      toast.error("Please select a word pack!");
       return;
     }
     startRound();
@@ -181,17 +188,38 @@ const Game = () => {
               </div>
             </Card>
 
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Box className="w-5 h-5" />
+                Choose Word Pack
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {wordPackNames.map((packName) => (
+                  <Button
+                    key={packName}
+                    onClick={() => setWordPack(packName)}
+                    variant={gameState.selectedWordPack === packName ? "default" : "outline"}
+                    className="h-auto py-6"
+                  >
+                    {packName}
+                  </Button>
+                ))}
+              </div>
+            </Card>
+
             <Card className="p-8 text-center space-y-6">
               <div>
                 <h2 className="text-2xl font-bold mb-2">Ready to Start?</h2>
                 <p className="text-muted-foreground">
                   {gameState.players.length < 3
                     ? `Need at least 3 players (currently ${gameState.players.length})`
-                    : `${gameState.players.length} players ready!`}
+                    : !gameState.selectedWordPack
+                    ? "Select a word pack to continue"
+                    : `${gameState.players.length} players ready with ${gameState.selectedWordPack} pack!`}
                 </p>
               </div>
 
-              {gameState.players.length >= 3 && (
+              {gameState.players.length >= 3 && gameState.selectedWordPack && (
                 <Button onClick={handleStartRound} size="lg" className="bg-gradient-primary">
                   Start Round
                 </Button>
