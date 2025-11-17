@@ -243,9 +243,7 @@ const Game = () => {
 
   const togglePackSelection = (packName: string) => {
     setSelectedPacksToDelete((prev) =>
-      prev.includes(packName) 
-        ? prev.filter((p) => p !== packName)
-        : [...prev, packName]
+      prev.includes(packName) ? prev.filter((p) => p !== packName) : [...prev, packName],
     );
   };
 
@@ -281,7 +279,7 @@ const Game = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 
+            <h1
               className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
               onClick={handleLogoClick}
             >
@@ -313,9 +311,7 @@ const Game = () => {
                 <li>All current scores</li>
                 <li>All unsaved custom word packs</li>
               </ul>
-              <p className="text-sm text-muted-foreground italic">
-                (Saved packs will be kept safe!)
-              </p>
+              <p className="text-sm text-muted-foreground italic">(Saved packs will be kept safe!)</p>
             </div>
             <DialogFooter className="gap-2">
               <Button variant="outline" onClick={() => setIsNewGameDialogOpen(false)}>
@@ -436,7 +432,7 @@ const Game = () => {
                   const isSaved = pack && pack.isSaved;
                   const isSelected = selectedPacksToDelete.includes(packName);
                   const canDelete = isCustomPack(packName) && !isSaved;
-                  
+
                   return (
                     <div key={packName} className="relative">
                       <Button
@@ -448,11 +444,11 @@ const Game = () => {
                           }
                         }}
                         variant={
-                          isDeletePacksMode && isSelected 
+                          isDeletePacksMode && isSelected
                             ? "destructive"
-                            : gameState.selectedWordPack === packName 
-                            ? "default" 
-                            : "outline"
+                            : gameState.selectedWordPack === packName
+                              ? "default"
+                              : "outline"
                         }
                         className="h-auto py-4 md:py-6 w-full text-xs md:text-sm break-words"
                         disabled={isDeletePacksMode && !canDelete}
@@ -572,7 +568,7 @@ const Game = () => {
                 Pass the device to each player to see their role and submit their clue.
               </p>
               <p className="text-xs md:text-sm mb-3 md:mb-4">
-                <strong>Once you've seen your role, deselect your name and pass it to the next player.</strong>
+                <strong>Once you're done, deselect your name and pass it to the next player.</strong>
               </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
                 {gameState.players.map((player) => (
@@ -854,7 +850,7 @@ const Game = () => {
           </div>
         )}
       </div>
-      
+
       {/* Save Pack Passcode Dialog */}
       <Dialog open={packToSave !== null} onOpenChange={(open) => !open && setPackToSave(null)}>
         <DialogContent>
@@ -862,9 +858,7 @@ const Game = () => {
             <DialogTitle>Enter Passcode to Save Pack</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Enter the passcode to permanently save "{packToSave}"
-            </p>
+            <p className="text-sm text-muted-foreground">Enter the passcode to permanently save "{packToSave}"</p>
             <Input
               type="password"
               placeholder="Enter passcode"
@@ -874,14 +868,16 @@ const Game = () => {
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setPackToSave(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setPackToSave(null)}>
+              Cancel
+            </Button>
             <Button onClick={handleVerifySavePasscode}>Save Pack</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       <BugReportWidget />
-      
+
       {/* Winner Screen */}
       {winner && <WinnerScreen winnerName={winner} onFindNewWinner={handleFindNewWinner} />}
     </div>
