@@ -11,6 +11,7 @@ const Index = () => {
   const location = useLocation();
   const [imageIndex, setImageIndex] = useState(0);
   const [hasActiveSession, setHasActiveSession] = useState(false);
+  const [isGatsbyMode, setIsGatsbyMode] = useState(false);
 
   const images = [chameleonLogo, drewPhoto, dogPhoto];
 
@@ -39,6 +40,81 @@ const Index = () => {
     navigate("/game");
   };
 
+  const handleLogoClick = () => {
+    const nextIndex = (imageIndex + 1) % 3;
+    setImageIndex(nextIndex);
+    
+    // Enter Gatsby Mode when clicking to dog picture (index 2)
+    if (nextIndex === 2) {
+      setIsGatsbyMode(true);
+    }
+  };
+
+  const handleGatsbyLogoClick = () => {
+    // Exit Gatsby Mode and return to home screen
+    setIsGatsbyMode(false);
+    setImageIndex(0);
+  };
+
+  const handleSelfDestruct = () => {
+    // TODO: Implement self-destruct functionality
+    console.log("💥 SELF DESTRUCT ACTIVATED!");
+  };
+
+  // If in Gatsby Mode, show special screen
+  if (isGatsbyMode) {
+    return (
+      <div className="min-h-screen bg-gradient-game flex items-center justify-center p-4">
+        <Card className="p-8 md:p-12 w-full max-w-md space-y-8 shadow-card">
+          {/* Header */}
+          <div className="text-center space-y-3">
+            <div className="flex justify-center mb-4">
+              <img
+                src={dogPhoto}
+                alt="Great Gatsby Mode"
+                className="w-24 h-24 rounded-full object-cover cursor-pointer transition-transform hover:scale-105"
+                onClick={handleGatsbyLogoClick}
+              />
+            </div>
+            <h1 className="text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">Great Gatsby Mode</h1>
+            <p className="text-muted-foreground text-lg">Old Sport Edition</p>
+          </div>
+
+          {/* Options */}
+          <div className="space-y-3">
+            <Button
+              onClick={handleCreateRoom}
+              size="lg"
+              className="w-full bg-gradient-primary hover:opacity-90 transition-opacity text-lg py-6"
+            >
+              Play
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-full text-lg py-6"
+              onClick={() => console.log("Settings clicked")}
+            >
+              Settings
+            </Button>
+          </div>
+
+          {/* Super Self Destruct Button */}
+          <div className="pt-4">
+            <Button
+              onClick={handleSelfDestruct}
+              size="lg"
+              variant="destructive"
+              className="w-full text-lg py-6 bg-destructive hover:bg-destructive/90"
+            >
+              🔴 Super Self Destruct Button
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-game flex items-center justify-center p-4">
       <Card className="p-8 md:p-12 w-full max-w-md space-y-8 shadow-card">
@@ -49,7 +125,7 @@ const Index = () => {
               src={images[imageIndex]}
               alt="Drewmeleon Logo"
               className="w-24 h-24 rounded-full object-cover cursor-pointer transition-transform hover:scale-105"
-              onClick={() => setImageIndex((prev) => (prev + 1) % 3)}
+              onClick={handleLogoClick}
             />
           </div>
           <h1 className="text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">Drewmeleon</h1>
