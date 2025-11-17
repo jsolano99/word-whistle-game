@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { BugReportWidget } from "@/components/BugReportWidget";
 import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -134,6 +135,8 @@ const GatsbySettings = () => {
           </div>
         )}
       </Card>
+
+      <BugReportWidget />
     </div>
   );
 };

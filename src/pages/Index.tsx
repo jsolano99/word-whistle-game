@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { BugReportWidget } from "@/components/BugReportWidget";
 import chameleonLogo from "@/assets/chameleon-logo.jpg";
 import drewPhoto from "@/assets/drew-photo.png";
 import dogPhoto from "@/assets/dog-photo.png";
@@ -223,6 +224,8 @@ const Index = () => {
           </ul>
         </Card>
       </Card>
+
+      <BugReportWidget />
     </div>
   );
 };
