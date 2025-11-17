@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import chameleonLogo from "@/assets/chameleon-logo.jpg";
 import drewPhoto from "@/assets/drew-photo.png";
 import dogPhoto from "@/assets/dog-photo.png";
+import absoluteCinema from "@/assets/absolute-cinema.png";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -12,8 +13,21 @@ const Index = () => {
   const [imageIndex, setImageIndex] = useState(0);
   const [hasActiveSession, setHasActiveSession] = useState(false);
   const [isGatsbyMode, setIsGatsbyMode] = useState(false);
+  const [isSelfDestructed, setIsSelfDestructed] = useState(() => {
+    return localStorage.getItem("gatsby_self_destruct") === "true";
+  });
+  const [isExploding, setIsExploding] = useState(false);
 
   const images = [chameleonLogo, drewPhoto, dogPhoto];
+
+  // Check if we should be in Gatsby Mode from URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("gatsby") === "true") {
+      setIsGatsbyMode(true);
+      setImageIndex(2);
+    }
+  }, [location]);
 
   // Check for active session whenever the page is visited
   useEffect(() => {
@@ -57,9 +71,55 @@ const Index = () => {
   };
 
   const handleSelfDestruct = () => {
-    // TODO: Implement self-destruct functionality
-    console.log("💥 SELF DESTRUCT ACTIVATED!");
+    setIsExploding(true);
+    
+    // White explosion screen
+    setTimeout(() => {
+      // Fade to black
+      const explosionEl = document.getElementById("explosion-screen");
+      if (explosionEl) {
+        explosionEl.style.backgroundColor = "black";
+      }
+    }, 500);
+
+    // Show absolute cinema
+    setTimeout(() => {
+      localStorage.setItem("gatsby_self_destruct", "true");
+      setIsSelfDestructed(true);
+      setIsExploding(false);
+    }, 1500);
   };
+
+  const handlePlayClick = () => {
+    navigate("/gatsby-game");
+  };
+
+  const handleSettingsClick = () => {
+    navigate("/gatsby-settings");
+  };
+
+  // If self-destructed, show absolute cinema screen
+  if (isSelfDestructed) {
+    return (
+      <div className="fixed inset-0 w-screen h-screen bg-black">
+        <img
+          src={absoluteCinema}
+          alt="Absolute Cinema"
+          className="w-full h-full object-cover"
+        />
+      </div>
+    );
+  }
+
+  // Explosion animation overlay
+  if (isExploding) {
+    return (
+      <div
+        id="explosion-screen"
+        className="fixed inset-0 w-screen h-screen bg-white transition-colors duration-1000"
+      />
+    );
+  }
 
   // If in Gatsby Mode, show special screen
   if (isGatsbyMode) {
@@ -83,7 +143,7 @@ const Index = () => {
           {/* Options */}
           <div className="space-y-3">
             <Button
-              onClick={handleCreateRoom}
+              onClick={handlePlayClick}
               size="lg"
               className="w-full bg-gradient-primary hover:opacity-90 transition-opacity text-lg py-6"
             >
@@ -93,7 +153,7 @@ const Index = () => {
               size="lg"
               variant="outline"
               className="w-full text-lg py-6"
-              onClick={() => console.log("Settings clicked")}
+              onClick={handleSettingsClick}
             >
               Settings
             </Button>
@@ -107,7 +167,7 @@ const Index = () => {
               variant="destructive"
               className="w-full text-lg py-6 bg-destructive hover:bg-destructive/90"
             >
-              🔴 Super Self Destruct Button
+              💣 Super Self Destruct Button
             </Button>
           </div>
         </Card>
