@@ -50,12 +50,7 @@ export const WinnerScreen = ({ winnerName, onFindNewWinner }: WinnerScreenProps)
       )}
 
       {/* Winner Card */}
-      <Card className="p-12 max-w-2xl w-full mx-4 text-center space-y-8 shadow-card relative z-10">
-        {/* Winner Name Above Wreath */}
-        <h2 className="text-4xl font-bold text-yellow-600">
-          {winnerName}
-        </h2>
-
+      <Card className="p-12 max-w-2xl w-full mx-4 text-center space-y-6 shadow-card relative z-10">
         {/* Laurel Wreath Image */}
         <div className="flex justify-center">
           <img 
@@ -64,6 +59,11 @@ export const WinnerScreen = ({ winnerName, onFindNewWinner }: WinnerScreenProps)
             className="w-64 h-64 object-contain"
           />
         </div>
+
+        {/* Winner Name Below Wreath */}
+        <h2 className="text-6xl font-bold text-yellow-600 -mt-8">
+          {winnerName}
+        </h2>
 
         <div className="space-y-4">
           <h1 className="text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
