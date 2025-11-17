@@ -43,7 +43,7 @@ const Index = () => {
   const handleLogoClick = () => {
     const nextIndex = (imageIndex + 1) % 3;
     setImageIndex(nextIndex);
-    
+
     // Enter Gatsby Mode when clicking to dog picture (index 2)
     if (nextIndex === 2) {
       setIsGatsbyMode(true);
@@ -77,7 +77,7 @@ const Index = () => {
               />
             </div>
             <h1 className="text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">Great Gatsby Mode</h1>
-            <p className="text-muted-foreground text-lg">Old Sport Edition</p>
+            <p className="text-muted-foreground text-lg"></p>
           </div>
 
           {/* Options */}
