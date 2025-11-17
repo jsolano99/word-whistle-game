@@ -781,31 +781,29 @@ const Game = () => {
               </div>
             </Card>
 
-            {/* Words Section - shown after all votes are in */}
-            {allVotesIn && (
-              <Card className="p-4 md:p-6">
-                <h3 className="text-base md:text-lg lg:text-xl font-semibold mb-3 md:mb-4 text-center break-words">
-                  {gameState.wordPack} Theme
-                </h3>
-                <div className="grid grid-cols-4 gap-2">
-                  {gameState.wordGrid.map((word, idx) => (
-                    <div
-                      key={idx}
-                      className="p-1.5 md:p-2 rounded-lg text-center font-medium bg-muted overflow-hidden flex items-center justify-center min-h-[3rem] md:min-h-[3.5rem]"
+            {/* Words Section */}
+            <Card className="p-4 md:p-6">
+              <h3 className="text-base md:text-lg lg:text-xl font-semibold mb-3 md:mb-4 text-center break-words">
+                {gameState.wordPack} Theme
+              </h3>
+              <div className="grid grid-cols-4 gap-2">
+                {gameState.wordGrid.map((word, idx) => (
+                  <div
+                    key={idx}
+                    className="p-1.5 md:p-2 rounded-lg text-center font-medium bg-muted overflow-hidden flex items-center justify-center min-h-[3rem] md:min-h-[3.5rem]"
+                  >
+                    <span
+                      className={`${
+                        word.length > 8 ? "text-[0.65rem] md:text-xs" : "text-xs md:text-sm"
+                      } break-words hyphens-auto leading-tight`}
+                      style={{ wordBreak: "break-word" }}
                     >
-                      <span
-                        className={`${
-                          word.length > 8 ? "text-[0.65rem] md:text-xs" : "text-xs md:text-sm"
-                        } break-words hyphens-auto leading-tight`}
-                        style={{ wordBreak: "break-word" }}
-                      >
-                        {word}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            )}
+                      {word}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </Card>
 
             {/* Vote Progress */}
             <Card className="p-4 md:p-6 text-center">
