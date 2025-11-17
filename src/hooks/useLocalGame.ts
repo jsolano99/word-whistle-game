@@ -288,6 +288,25 @@ export const useLocalGame = () => {
     }));
   }, []);
 
+  const resetScores = useCallback(() => {
+    setGameState((prev) => ({
+      ...prev,
+      phase: "lobby",
+      round: 1,
+      chameleonId: null,
+      secretWord: null,
+      wordGrid: [],
+      wordPack: null,
+      selectedWordPack: null,
+      players: prev.players.map((p) => ({
+        ...p,
+        score: 0,
+        clue: undefined,
+        vote: undefined,
+      })),
+    }));
+  }, []);
+
   const resetGame = useCallback(() => {
     // Remove unsaved custom packs
     setCustomPacks((prev) => prev.filter((p) => p.isSaved));
@@ -355,6 +374,7 @@ export const useLocalGame = () => {
     submitVote,
     goToReveal,
     nextRound,
+    resetScores,
     resetGame,
     addCustomPack,
     saveCustomPack,
