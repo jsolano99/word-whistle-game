@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import chameleonLogo from "@/assets/chameleon-logo.jpg";
 import drewPhoto from "@/assets/drew-photo.png";
@@ -9,24 +8,12 @@ import dogPhoto from "@/assets/dog-photo.png";
 
 const Index = () => {
   const navigate = useNavigate();
-  const [roomCode, setRoomCode] = useState("");
   const [imageIndex, setImageIndex] = useState(0);
   
   const images = [chameleonLogo, drewPhoto, dogPhoto];
 
-  const generateRoomCode = () => {
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
-  };
-
   const handleCreateRoom = () => {
-    const code = generateRoomCode();
-    navigate(`/room/${code}`);
-  };
-
-  const handleJoinRoom = () => {
-    if (roomCode.trim()) {
-      navigate(`/room/${roomCode.toUpperCase()}`);
-    }
+    navigate("/game");
   };
 
   return (
@@ -61,36 +48,6 @@ const Index = () => {
           </Button>
         </div>
 
-        {/* Divider */}
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-card text-muted-foreground">or</span>
-          </div>
-        </div>
-
-        {/* Join Room */}
-        <div className="space-y-3">
-          <Input
-            placeholder="Enter room code"
-            value={roomCode}
-            onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-            onKeyDown={(e) => e.key === "Enter" && handleJoinRoom()}
-            className="text-center text-lg tracking-wider uppercase"
-            maxLength={6}
-          />
-          <Button
-            onClick={handleJoinRoom}
-            variant="outline"
-            size="lg"
-            className="w-full text-lg py-6"
-            disabled={!roomCode.trim()}
-          >
-            Join Game
-          </Button>
-        </div>
 
         {/* How to Play */}
         <Card className="p-4 bg-muted border-none">
