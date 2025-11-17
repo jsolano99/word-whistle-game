@@ -48,6 +48,7 @@ const Game = () => {
     submitVote,
     goToReveal,
     nextRound,
+    resetScores,
     resetGame,
     addCustomPack,
     saveCustomPack,
@@ -147,6 +148,12 @@ const Game = () => {
     setWinner(null); // Reset winner when starting new game
     setIsNewGameDialogOpen(false);
     toast.success("Game reset! Ready for a new game.");
+  };
+
+  const handleFindNewWinner = () => {
+    resetScores();
+    setWinner(null);
+    toast.success("Scores reset! Ready for a new round.");
   };
 
   const handleLogoClick = () => {
@@ -876,7 +883,7 @@ const Game = () => {
       <BugReportWidget />
       
       {/* Winner Screen */}
-      {winner && <WinnerScreen winnerName={winner} />}
+      {winner && <WinnerScreen winnerName={winner} onFindNewWinner={handleFindNewWinner} />}
     </div>
   );
 };

@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface WinnerScreenProps {
   winnerName: string;
+  onFindNewWinner: () => void;
 }
 
-export const WinnerScreen = ({ winnerName }: WinnerScreenProps) => {
+export const WinnerScreen = ({ winnerName, onFindNewWinner }: WinnerScreenProps) => {
   const [confetti, setConfetti] = useState<Array<{ id: number; left: number; delay: number }>>([]);
   const [showConfetti, setShowConfetti] = useState(true);
 
@@ -86,6 +88,14 @@ export const WinnerScreen = ({ winnerName }: WinnerScreenProps) => {
             nice you won, now go touch some grass.
           </p>
         </div>
+
+        <Button
+          onClick={onFindNewWinner}
+          size="lg"
+          className="mt-6"
+        >
+          Find New Winner
+        </Button>
       </Card>
     </div>
   );
