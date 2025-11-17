@@ -373,7 +373,7 @@ const Game = () => {
                 Pass the device to each player to see their role and submit their clue.
               </p>
               <p className="text-xs md:text-sm mb-3 md:mb-4">
-                <strong>Once you've see your role, deselect your name and pass it to the next player.</strong>
+                <strong>Once you've seen your role, deselect your name and pass it to the next player.</strong>
               </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
                 {gameState.players.map((player) => (
