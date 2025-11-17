@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import chameleonLogo from "@/assets/chameleon-logo.jpg";
@@ -8,23 +8,31 @@ import dogPhoto from "@/assets/dog-photo.png";
 
 const Index = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [imageIndex, setImageIndex] = useState(0);
   const [hasActiveSession, setHasActiveSession] = useState(false);
 
   const images = [chameleonLogo, drewPhoto, dogPhoto];
 
+  // Check for active session whenever the page is visited
   useEffect(() => {
-    // Check if there's an active game session (not in lobby)
-    try {
-      const stored = localStorage.getItem("drewmeleon_game_state");
-      if (stored) {
-        const gameState = JSON.parse(stored);
-        setHasActiveSession(gameState.phase !== "lobby" && gameState.players.length > 0);
+    const checkActiveSession = () => {
+      try {
+        const stored = localStorage.getItem("drewmeleon_game_state");
+        if (stored) {
+          const gameState = JSON.parse(stored);
+          const isActive = gameState.phase !== "lobby" && gameState.players.length > 0;
+          setHasActiveSession(isActive);
+        } else {
+          setHasActiveSession(false);
+        }
+      } catch {
+        setHasActiveSession(false);
       }
-    } catch {
-      setHasActiveSession(false);
-    }
-  }, []);
+    };
+
+    checkActiveSession();
+  }, [location]);
 
   const handleCreateRoom = () => {
     navigate("/game");
