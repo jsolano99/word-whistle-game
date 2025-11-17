@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocalGame, getWordPackNames } from "@/hooks/useLocalGame";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Crown, Users, Trash2, UserPlus, Box, Plus, X, Save, AlertTriangle } from "lucide-react";
 import { z } from "zod";
 import { BugReportWidget } from "@/components/BugReportWidget";
+import { WinnerScreen } from "@/components/WinnerScreen";
 
 const customPackSchema = z.object({
   name: z.string().trim().min(1, "Pack name is required").max(30, "Pack name must be less than 30 characters"),
@@ -33,6 +34,7 @@ const Game = () => {
   const [selectedPacksToDelete, setSelectedPacksToDelete] = useState<string[]>([]);
   const [savePasscode, setSavePasscode] = useState("");
   const [packToSave, setPackToSave] = useState<string | null>(null);
+  const [winner, setWinner] = useState<string | null>(null);
 
   const {
     gameState,
@@ -55,6 +57,14 @@ const Game = () => {
   } = useLocalGame();
 
   const wordPackNames = getWordPackNames(customPacks);
+
+  // Check for winner (first to 6 points)
+  useEffect(() => {
+    const winningPlayer = gameState.players.find((p) => p.score >= 6);
+    if (winningPlayer && !winner) {
+      setWinner(winningPlayer.name);
+    }
+  }, [gameState.players, winner]);
 
   const handleAddPlayer = () => {
     if (playerNameInput.trim()) {
@@ -134,7 +144,9 @@ const Game = () => {
 
   const confirmResetGame = () => {
     resetGame();
+    setWinner(null); // Reset winner when starting new game
     setIsNewGameDialogOpen(false);
+    toast.success("Game reset! Ready for a new game.");
   };
 
   const handleLogoClick = () => {
@@ -862,6 +874,9 @@ const Game = () => {
       </Dialog>
       
       <BugReportWidget />
+      
+      {/* Winner Screen */}
+      {winner && <WinnerScreen winnerName={winner} />}
     </div>
   );
 };

@@ -53,10 +53,22 @@ const Index = () => {
         <Card className="p-4 bg-muted border-none">
           <h3 className="font-semibold mb-2 text-center">How to Play</h3>
           <ul className="text-sm text-muted-foreground space-y-1">
+            <li>• Everyone gets the same secret word</li>
+            <li>• Give a one-word clue about secret word</li>
             <li>• One player is secretly the Drewmeleon</li>
-            <li>• Everyone gives a one-word clue</li>
-            <li>• Vote for who you think is the Drewmeleon</li>
-            <li>• The Drewmeleon tries to blend in!</li>
+            <li>• The Drewmeleon must blend in to win</li>
+            <li>• Vote who you think is the Drewmeleon, but be wise</li>
+          </ul>
+        </Card>
+
+        {/* Scoring */}
+        <Card className="p-4 bg-muted border-none">
+          <h3 className="font-semibold mb-2 text-center">Scoring</h3>
+          <ul className="text-sm text-muted-foreground space-y-1">
+            <li>• First player to get to 6 points wins</li>
+            <li>• If the Drewmeleon successfully blends in, they receive 2 points</li>
+            <li>• If players correctly discovered the Drewmeleon receive 1 point each</li>
+            <li>• If Drewmeleon successfully guesses the word they receive one point</li>
           </ul>
         </Card>
       </Card>
