@@ -193,9 +193,9 @@ const Index = () => {
         <Card className="p-4 bg-muted border-none">
           <h3 className="font-semibold mb-2 text-center">How to Play</h3>
           <ul className="text-sm text-muted-foreground space-y-1">
+            <li>• One player is secretly the Drewmeleon</li>
             <li>• Everyone knows the secret word, besides the Drewmeleon</li>
             <li>• Give a one-word clue about the secret word</li>
-            <li>• One player is secretly the Drewmeleon</li>
             <li>• The Drewmeleon must blend in to win</li>
             <li>• Vote who you think the Drewmeleon is</li>
           </ul>
