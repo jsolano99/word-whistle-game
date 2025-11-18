@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import laurelWreath from "@/assets/laurel-wreath.png";
 
 interface WinnerScreenProps {
-  winnerName: string;
+  winnerNames: string[];
   onFindNewWinner: () => void;
 }
 
-export const WinnerScreen = ({ winnerName, onFindNewWinner }: WinnerScreenProps) => {
+export const WinnerScreen = ({ winnerNames, onFindNewWinner }: WinnerScreenProps) => {
   const [confetti, setConfetti] = useState<Array<{ id: number; left: number; delay: number }>>([]);
   const [showConfetti, setShowConfetti] = useState(true);
 
@@ -60,17 +60,23 @@ export const WinnerScreen = ({ winnerName, onFindNewWinner }: WinnerScreenProps)
           />
         </div>
 
-        {/* Winner Name Below Wreath */}
-        <h2 className="text-6xl font-bold text-yellow-600 -mt-8">
-          {winnerName}
-        </h2>
+        {/* Winner Names Below Wreath */}
+        <div className="-mt-8 space-y-2">
+          {winnerNames.map((name, index) => (
+            <h2 key={index} className="text-6xl font-bold text-yellow-600">
+              {name}
+            </h2>
+          ))}
+        </div>
 
         <div className="space-y-4">
           <h1 className="text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Victory!
+            {winnerNames.length > 1 ? "It's a Tie!" : "Victory!"}
           </h1>
           <p className="text-2xl text-muted-foreground">
-            nice you won, now go touch some grass or attend an Andrew's Mixer ;)
+            {winnerNames.length > 1 
+              ? "nice you all tied, now go touch some grass or attend an Andrew's Mixer ;)"
+              : "nice you won, now go touch some grass or attend an Andrew's Mixer ;)"}
           </p>
         </div>
 
