@@ -71,7 +71,7 @@ const Index = () => {
 
   const handleSelfDestruct = () => {
     setIsExploding(true);
-    
+
     // White explosion screen
     setTimeout(() => {
       // Fade to black
@@ -100,11 +100,7 @@ const Index = () => {
   if (isSelfDestructed) {
     return (
       <div className="fixed inset-0 w-screen h-screen bg-black">
-        <img
-          src={absoluteCinema}
-          alt="Absolute Cinema"
-          className="w-full h-full object-cover"
-        />
+        <img src={absoluteCinema} alt="Absolute Cinema" className="w-full h-full object-cover" />
       </div>
     );
   }
@@ -112,10 +108,7 @@ const Index = () => {
   // Explosion animation overlay
   if (isExploding) {
     return (
-      <div
-        id="explosion-screen"
-        className="fixed inset-0 w-screen h-screen bg-white transition-colors duration-1000"
-      />
+      <div id="explosion-screen" className="fixed inset-0 w-screen h-screen bg-white transition-colors duration-1000" />
     );
   }
 
@@ -147,12 +140,7 @@ const Index = () => {
             >
               Play
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="w-full text-lg py-6"
-              onClick={handleSettingsClick}
-            >
+            <Button size="lg" variant="outline" className="w-full text-lg py-6" onClick={handleSettingsClick}>
               Settings
             </Button>
           </div>
@@ -205,7 +193,7 @@ const Index = () => {
         <Card className="p-4 bg-muted border-none">
           <h3 className="font-semibold mb-2 text-center">How to Play</h3>
           <ul className="text-sm text-muted-foreground space-y-1">
-            <li>• Everyone gets the same secret word</li>
+            <li>• Everyone gets the same secret word, besideds the Drewmeleon</li>
             <li>• Give a one-word clue about secret word</li>
             <li>• One player is secretly the Drewmeleon</li>
             <li>• The Drewmeleon must blend in to win</li>
