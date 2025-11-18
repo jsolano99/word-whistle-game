@@ -34,7 +34,7 @@ const Game = () => {
   const [selectedPacksToDelete, setSelectedPacksToDelete] = useState<string[]>([]);
   const [savePasscode, setSavePasscode] = useState("");
   const [packToSave, setPackToSave] = useState<string | null>(null);
-  const [winner, setWinner] = useState<string | null>(null);
+  const [winners, setWinners] = useState<string[]>([]);
   const [drewmeleonGuessed, setDrewmeleonGuessed] = useState(false);
   const [drewmeleonGuessedCorrectly, setDrewmeleonGuessedCorrectly] = useState(false);
 
@@ -62,13 +62,15 @@ const Game = () => {
 
   const wordPackNames = getWordPackNames(customPacks);
 
-  // Check for winner (first to 6 points)
+  // Check for winners (first to 6 points, handle ties)
   useEffect(() => {
-    const winningPlayer = gameState.players.find((p) => p.score >= 6);
-    if (winningPlayer && !winner) {
-      setWinner(winningPlayer.name);
+    const playersWithSix = gameState.players.filter((p) => p.score >= 6);
+    if (playersWithSix.length > 0 && winners.length === 0) {
+      const maxScore = Math.max(...playersWithSix.map(p => p.score));
+      const allWinners = playersWithSix.filter(p => p.score === maxScore);
+      setWinners(allWinners.map(p => p.name));
     }
-  }, [gameState.players, winner]);
+  }, [gameState.players, winners]);
 
   const handleAddPlayer = () => {
     if (playerNameInput.trim()) {
@@ -152,14 +154,14 @@ const Game = () => {
 
   const confirmResetGame = () => {
     resetGame();
-    setWinner(null); // Reset winner when starting new game
+    setWinners([]); // Reset winners when starting new game
     setIsNewGameDialogOpen(false);
     toast.success("Game reset! Ready for a new game.");
   };
 
   const handleFindNewWinner = () => {
     resetScores();
-    setWinner(null);
+    setWinners([]);
     toast.success("Scores reset! Ready for a new round.");
   };
 
@@ -1016,7 +1018,7 @@ const Game = () => {
       <BugReportWidget />
 
       {/* Winner Screen */}
-      {winner && <WinnerScreen winnerName={winner} onFindNewWinner={handleFindNewWinner} />}
+      {winners.length > 0 && <WinnerScreen winnerNames={winners} onFindNewWinner={handleFindNewWinner} />}
     </div>
   );
 };
