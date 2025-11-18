@@ -22,6 +22,7 @@ export type Database = {
           screenshot_url: string | null
           url: string
           user_agent: string
+          user_email: string | null
         }
         Insert: {
           created_at?: string
@@ -30,6 +31,7 @@ export type Database = {
           screenshot_url?: string | null
           url: string
           user_agent: string
+          user_email?: string | null
         }
         Update: {
           created_at?: string
@@ -38,6 +40,7 @@ export type Database = {
           screenshot_url?: string | null
           url?: string
           user_agent?: string
+          user_email?: string | null
         }
         Relationships: []
       }

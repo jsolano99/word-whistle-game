@@ -8,6 +8,7 @@ import { toast } from "sonner";
 export const BugReportWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [bugDescription, setBugDescription] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [screenshot, setScreenshot] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -41,6 +42,10 @@ export const BugReportWidget = () => {
       formData.append('url', window.location.href);
       formData.append('userAgent', navigator.userAgent);
       
+      if (userEmail.trim()) {
+        formData.append('userEmail', userEmail);
+      }
+      
       if (screenshot) {
         formData.append('screenshot', screenshot);
       }
@@ -59,6 +64,7 @@ export const BugReportWidget = () => {
 
       toast.success("Bug report submitted successfully!");
       setBugDescription("");
+      setUserEmail("");
       setScreenshot(null);
       setIsOpen(false);
     } catch (error) {
@@ -96,6 +102,22 @@ export const BugReportWidget = () => {
                 rows={6}
                 className="resize-none"
               />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Your email (optional)
+              </label>
+              <input
+                type="email"
+                placeholder="your@email.com"
+                value={userEmail}
+                onChange={(e) => setUserEmail(e.target.value)}
+                className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                We'll send you a thank you note for helping us improve
+              </p>
             </div>
 
             <div>
